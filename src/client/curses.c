@@ -158,14 +158,14 @@ void update_hud(struct RemoteHost *rh) {
   mvwprintw(rh->window, ++y, 0, "<ALT-ESC> to Exit");
 }
 
-void update_session_window(struct RemoteHost *rh, uint16_t vga_offset,
+void update_session_window(struct RemoteHost *rh, uint16_t video_offset,
                            uint16_t byte_count) {
 
-  for (uint16_t i = vga_offset; i < (vga_offset + byte_count); i += 2) {
+  for (uint16_t i = video_offset; i < (video_offset + byte_count); i += 2) {
     const uint16_t y = (i >> 1) / rh->text_cols;
     const uint16_t x = (i >> 1) % rh->text_cols;
-    const uint8_t ch = rh->vga_text_buffer[i];
-    const uint8_t attr = rh->vga_text_buffer[i + 1];
+    const uint8_t ch = rh->video_text_buffer[i];
+    const uint8_t attr = rh->video_text_buffer[i + 1];
 
     wattron(g_session_window, COLOR_PAIR(g_ncurses_colors[attr]));
     //  wattron(g_session_window, PAIR_NUMBER(attr));

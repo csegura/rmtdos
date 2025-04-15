@@ -43,7 +43,7 @@ struct RemoteHost {
 
   // Raw VGA text buffer, as sent from client in V1_VGA_TEXT packets.
   // VGA text buffer is from $000b8000 to $000bffff (32KiB).
-  uint8_t vga_text_buffer[32768];
+  uint8_t video_text_buffer[32768];
 };
 
 extern void hostlist_create();

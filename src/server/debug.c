@@ -6,7 +6,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "lib16/vga.h"
+#include "lib16/video.h"
 #include "server/debug.h"
 
 void hex_dump(FILE *fp, const void *buffer, size_t bytes) {
@@ -35,5 +35,5 @@ void hex_dump(FILE *fp, const void *buffer, size_t bytes) {
 }
 
 void log_checkpoint(const char *file, int line) {
-  vga_printf(0, 0, 0x1f, "CP: %s:%d     ", file, line);
+  video_printf(0, 0, 0x1f, "CP: %s:%d     ", file, line);
 }

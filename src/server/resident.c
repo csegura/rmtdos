@@ -9,8 +9,8 @@
 #include <dos.h>
 #endif
 
-#include "lib16/vga.h"
 #include "lib16/x86.h"
+#include "lib16/video.h"
 #include "server/config.h"
 #include "server/globals.h"
 #include "server/int08.h"
@@ -81,14 +81,14 @@ int resident_do_uninstall() {
 
 #if DEBUG
 void isr_show_debug_stats() {
-  vga_printf(64, 0, 15, "int 08: %8lu", int08_ticks);
+  video_printf(64, 0, 15, "int 08: %8lu", int08_ticks);
 #if HAS_INT28
-  vga_printf(64, 1, 15, "int 28: %8lu", int28_ticks);
+  video_printf(64, 1, 15, "int 28: %8lu", int28_ticks);
 #endif
-  vga_printf(64, 2, 15, "int 2f: %8lu", int2f_ticks);
-  vga_printf(64, 3, 15, "Bios:  %9lu", x86_read_bios_tick_clock());
-  vga_printf(64, 4, 15, "Recv:  %9lu", g_pktdrv_stats.packets_recv);
-  vga_printf(64, 5, 15, "Drop:  %9lu", g_pktdrv_stats.packets_dropped);
+  video_printf(64, 2, 15, "int 2f: %8lu", int2f_ticks);
+  video_printf(64, 3, 15, "Bios:  %9lu", x86_read_bios_tick_clock());
+  video_printf(64, 4, 15, "Recv:  %9lu", g_pktdrv_stats.packets_recv);
+  video_printf(64, 5, 15, "Drop:  %9lu", g_pktdrv_stats.packets_dropped);
 }
 #endif
 

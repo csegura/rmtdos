@@ -110,7 +110,7 @@ struct ProtocolHeader {
 
 // V1_STATUS_RESP: Server -> Client
 struct StatusResponse {
-  uint8_t vga_mode;
+  uint8_t video_mode;
   uint8_t active_page;
   uint8_t text_rows;
   uint8_t text_cols;
@@ -120,7 +120,7 @@ struct StatusResponse {
 
 // V1_VGA_TEXT: Server -> Client
 // Followed by raw data, to end of packet.
-struct VgaText {
+struct VideoText {
   uint8_t text_rows; // Current height of the screen
   uint8_t text_cols; // Current width of the screen
   uint16_t offset;   // Byte offset from $b800:0

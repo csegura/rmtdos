@@ -99,7 +99,7 @@ void hostlist_register(const uint8_t *packet, size_t length) {
   if (ntohs(ph->pkt_type) == V1_STATUS_RESP) {
     const struct StatusResponse *s = (const struct StatusResponse *)(ph + 1);
 
-    rh->status.vga_mode = s->vga_mode;
+    rh->status.video_mode = s->video_mode;
     rh->status.active_page = s->active_page;
     rh->status.text_rows = s->text_rows;
     rh->status.text_cols = s->text_cols;

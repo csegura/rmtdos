@@ -8,8 +8,9 @@
 #include <string.h>
 
 #include "lib16/types.h"
-#include "lib16/vga.h"
 #include "lib16/x86.h"
+#include "lib16/video.h"
+
 #include "server/bufmgr.h"
 #include "server/debug.h"
 #include "server/globals.h"
@@ -28,8 +29,8 @@ static void display_packet(const struct Buffer *buffer) {
   char tmp[MAC_ADDR_FMT_LEN];
   const uint16_t max_display_bytes = (2 * 16);
 
-  vga_gotoxy(0, 36);
-  vga_clear_rows(36, 50);
+  video_gotoxy(0, 36);
+  video_clear_rows(36, 50);
 
   printf("Raw Size:    %4d\n", buffer->bytes);
   printf("Dest:        %s\n", fmt_mac_addr(tmp, eh->dest_mac_addr));
@@ -98,20 +99,20 @@ void handle_status_req(const struct Buffer *buffer) {
   struct EthernetHeader *out_eh = (struct EthernetHeader *)(g_send_buffer);
   struct ProtocolHeader *out_ph = (struct ProtocolHeader *)(out_eh + 1);
   struct StatusResponse *resp = (struct StatusResponse *)(out_ph + 1);
-  struct VgaState vga;
+  struct VideoState video;
 
-  vga_read_state(&vga);
+  video_read_state(&video);
 
   prep_for_reply(buffer);
   out_ph->pkt_type = htons(V1_STATUS_RESP);
   out_ph->payload_len = htons(sizeof(*resp));
 
-  resp->vga_mode = vga.video_mode;
-  resp->active_page = vga.active_page;
-  resp->text_rows = vga.text_rows;
-  resp->text_cols = vga.text_cols;
-  resp->cursor_row = vga.cursor_row;
-  resp->cursor_col = vga.cursor_col;
+  resp->video_mode = video.video_mode;
+  resp->active_page = video.active_page;
+  resp->text_rows = video.text_rows;
+  resp->text_cols = video.text_cols;
+  resp->cursor_row = video.cursor_row;
+  resp->cursor_col = video.cursor_col;
 
 #define V1_STATUS_RESP_LEN (COMBINED_HEADER_LEN + sizeof(*resp))
 
@@ -134,7 +135,7 @@ void handle_inject_keystroke(const struct Buffer *buffer) {
 
   for (; key_count; ++in_keys, --key_count) {
 #if DEBUG
-    vga_printf(0, 0, 15, "key: %02x %02x %02x ", in_keys->bios_scan_code,
+    video_printf(0, 0, 15, "key: %02x %02x %02x ", in_keys->bios_scan_code,
                in_keys->ascii_value, in_keys->flags_17);
 #endif
 

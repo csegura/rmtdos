@@ -13,7 +13,7 @@
 #include <stdlib.h>
 
 #include "lib16/hex2int.h"
-#include "lib16/vga.h"
+#include "lib16/video.h"
 #include "lib16/x86.h"
 #include "server/bufmgr.h"
 #include "server/config.h"
@@ -101,7 +101,7 @@ void print_usage(const char *prog) {
   printf("Usage: %s [-b #] [-d] [-e type] [-i irq#] [-u]\n", prog);
   printf("  -b  Count of Ethernet receive buffers (decimal).\n");
 #if DEBUG
-  printf("  -d  Show debug overlay on VGA text screen.\n");
+  printf("  -d  Show debug overlay.\n");
 #endif
   printf("  -e  Override EtherType (4 hex digits).\n");
   printf("  -i  IRQ for packet driver.  Omit to auto-probe. (decimal)\n");
@@ -119,6 +119,7 @@ int main(int argc, char *argv[]) {
   struct CpuRegs regs;
   char tmp[32];
   void *keep_ptr = NULL;
+  struct VideoState video_state;
 
   while (-1 != (opt = getopt(argv, argv, "b:de:hi:u"))) {
     switch (opt) {
@@ -167,6 +168,12 @@ int main(int argc, char *argv[]) {
   } else if (buffers > MAX_BUFFERS) {
     buffers = MAX_BUFFERS;
   }
+
+  video_init();
+  
+  // video_read_state(&video_state);
+  // printf("Video State: %02x %02x %02x %02x\n", video_state.video_mode,
+  //        video_state.active_page, video_state.text_rows, video_state.text_cols);
 
   // Check to see if a previous incarnation is already installed / "resident".
   x86_reset_regs(&regs);
