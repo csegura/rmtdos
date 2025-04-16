@@ -6,9 +6,8 @@
 #include <stddef.h>
 #include <string.h>
 
-
-#include "lib16/x86.h"
 #include "lib16/video.h"
+#include "lib16/x86.h"
 #include "server/bufmgr.h"
 #include "server/debug.h"
 #include "server/globals.h"
@@ -21,6 +20,8 @@ static struct Session g_sessions[MAX_SESSIONS];
 static struct Session *g_session_eof = g_sessions + MAX_SESSIONS;
 
 static uint8_t null_if_addr[ETH_ALEN] = {0, 0, 0, 0, 0, 0};
+
+static uint16_t video_chksum = 0;
 
 void session_mgr_init() { memset(&g_sessions, 0, sizeof(g_sessions)); }
 
@@ -92,6 +93,7 @@ void session_mgr_update_all() {
   uint16_t payload_len;
   uint16_t offset = 0;
   uint16_t word_count = 0;
+  uint16_t video_curr_chksum = 0;
   
   // Prune any stale sessions.
   for (s = g_sessions; s < g_session_eof; ++s) {
@@ -129,6 +131,19 @@ void session_mgr_update_all() {
   // to be.
   if (video_next_row >= video.text_rows) {
     video_next_row = 0;
+  }
+
+  // performance !!
+  if (video_next_row == 0) {
+    video_disable_blink();
+    video_curr_chksum = video_checksum_frame_buffer(0, video.text_rows * video.text_cols * VIDEO_WORD);
+    video_enable_blink();
+    if (video_curr_chksum != video_chksum) {
+      video_chksum = video_curr_chksum;
+    } else {
+      // No changes to the video frame buffer.  Don't send anything.
+      return;
+    }
   }
 
   // Compute how many rows we can fit into an Ethernet frame given the current
@@ -184,7 +199,7 @@ void session_mgr_update_all() {
 
   video_copy_from_frame_buffer(video_data, offset, word_count);
   // memset(video_data, 0x1f, word_count * 2);
-
+    
   for (s = g_sessions; s < g_session_eof; ++s) {
     // Is session in use?
     if (!memcmp(s->mac_addr, null_if_addr, ETH_ALEN)) {
@@ -195,4 +210,5 @@ void session_mgr_update_all() {
     out_ph->session_id = htonl(s->session_id);
     pktdrv_send(g_send_buffer, COMBINED_HEADER_LEN + payload_len);
   }
+
 }
