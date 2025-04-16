@@ -123,8 +123,8 @@ _video_gotoxy:
   mov      ax, [bx+2]             ; x
   mov      dl, al
 #endif
-  mov      ah, #$02               ; Set cursor position BIOS call
-  mov      bh, #0                 ; Assume page 0 (can be read from VgaState if needed)
+  mov      ah, #$02                    ; Set cursor position BIOS call
+  mov      bh, #0                      ; Assume page 0 (can be read from VgaState if needed)
   int      $10
   ret
 
@@ -153,7 +153,8 @@ _video_read_state:
   mov     [di + 4], dh                 ; state->cursor_row
   mov     [di + 5], dl                 ; state->cursor_col
 
-  ; Determine if we have an EGA or VGA video card to get accurate row count.
+  ; Check EGA or VGA and rows/cols
+
   mov     ax, #$1a00                   ; Canonical VGA adapter check
   int     $10
   cmp     al, #$1a
@@ -176,7 +177,7 @@ video_rs_no_vga:
   mov     bx, #$0010
   int     $10
   cmp     bl, #$10
-  je      video_rs_vga_or_ega     ; EGA detected
+  je      video_rs_vga_or_ega       ; EGA detected
 
 video_rs_done:
   pop     es
@@ -216,14 +217,14 @@ _video_clear_rows:
   cmp      word ptr [_active_video_segment], #$b800
   jne      mda_attribute
 
-  mov      ax, #$0720           ; "space on light grey" for VGA/CGA
+  mov      ax, #$0720           ; VGA "space on light grey" 
   jmp      fill_screen
 
 mda_attribute:
-  mov      ax, #$0720           ; Use same for MDA ("space with normal attribute") - 0x0700 might also work
+  mov      ax, #$0720           ; MDA ("space with normal attribute") 
 
 fill_screen:
-  ;  Perform the clear using REP STOSW 
+  ; clear the screen using rep stosw
   cld                           ; Ensure direction is forward
   rep 
   stosw                         ; Store AX (char+attr) CX times to ES:DI, incrementing DI
@@ -271,13 +272,13 @@ _video_copy_from_frame_buffer:
   rep 
   movsw                 ; Copy CX words from DS:SI (video) to ES:DI (program mem)
 
-  ;  Restore Registers and Return 
+  ; restore & return
   pop      di
   pop      si
   pop      es
-  pop      ds           ; Restore original DS *after* movsw is done
+  pop      ds           
   pop      bp
-  ret                   ; Return (6 bytes params popped by caller if cdecl)
+  ret                  
 
 ; uint16_t video_checksum_frame_buffer(
 ;  uint16_t offset,      Offset from frame buffer start
@@ -317,9 +318,225 @@ checksum_loop:
 
   mov      ax, dx       ; Return checksum in AX
 
-  pop      dx           ; Restore registers
+  pop      dx           
   pop      bx
   pop      si
   pop      ds
   pop      bp
   ret                 
+
+; uint16_t video_copy_from_frame_buffer_and_checksum(
+;  void *dest,        // Destination buffer (near pointer in DS)
+;  uint16_t offset,   // Source offset in video segment
+;  uint16_t words     // Number of words to copy and checksum
+; );
+; Copies data FROM video memory TO program memory using global segment,
+; AND returns a 16-bit checksum of the copied data.
+.text
+.global _video_copy_from_frame_buffer_and_checksum
+_video_copy_from_frame_buffer_and_checksum:
+  push     bp
+  mov      bp, sp
+  push     ds           
+  push     es           
+  push     si           
+  push     di           
+  push     cx           
+  push     dx           
+
+  ; Stack layout (params):
+  ; [bp + 0] = previous frame's BP
+  ; [bp + 2] = return address
+  ; [bp + 4] = dest (destination offset, near pointer relative to caller's DS)
+  ; [bp + 6] = offset (source offset within video segment)
+  ; [bp + 8] = words
+
+  ; Setup Destination: ES:DI
+  mov      ax, ds       ; Get caller's data segment (current DS upon entry)
+  mov      es, ax       ; Put it into ES for the destination of stosw
+  mov      di, [bp + 4] ; Load destination offset ('dest') into DI
+                      ; ES:DI now points to the destination buffer in program memory
+
+  ; Setup Source: DS:SI
+  mov      ax, [_active_video_segment] ; Get source video segment from global
+  mov      ds, ax       ; Load video segment into DS for the source of lodsw
+  mov      si, [bp + 6] ; Get source offset ('offset') into SI
+                      ; DS:SI now points to the source in video memory
+
+  ; Initialize Loop and Checksum
+  cld                   ; Ensure direction flag is forward for lodsw/stosw
+  mov      cx, [bp + 8] ; Load word count into CX
+  xor      dx, dx       ; Initialize checksum (DX) to 0
+  jcxz     copy_checksum_done ; Handle zero count case
+
+copy_checksum_loop:
+  ; Load word from video memory (DS:SI -> AX, SI+=2)
+  lodsw
+
+  ; Add loaded word to checksum
+  add      dx, ax       ; Add word in AX to checksum in DX
+
+  ; Store word to destination buffer (AX -> ES:DI, DI+=2)
+  stosw
+
+  ; Loop until CX is zero
+  loop     copy_checksum_loop
+
+copy_checksum_done:
+  ; Prepare Return Value
+  mov      ax, dx       ; Move final checksum from DX to AX for return
+
+  ; Restore Registers and Return
+  pop      dx
+  pop      cx
+  pop      di
+  pop      si
+  pop      es
+  pop      ds         
+  pop      bp
+  ret                 
+
+; ============= CURSOR CONTROL =============
+
+;----------------------------------------------------------------------------
+; void enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
+;----------------------------------------------------------------------------
+; Sets the cursor shape (start/end scanlines) and ensures cursor is visible.
+; Works for both MDA (ports 03B4/B5) and CGA/EGA/VGA (ports 03D4/D5)
+; by checking _active_video_segment.
+; Parameters (pushed right-to-left by C caller):
+;   [bp+6] = cursor_end (8-bit value, 0-15 typical)
+;   [bp+4] = cursor_start (8-bit value, 0-15 typical)
+; Assumes Real Mode execution.
+
+.global _video_enable_blink
+_video_enable_blink:
+    push    bp                      ; Set up stack frame
+    mov     bp, sp
+
+    push    ax                      ; Save registers used
+    push    bx
+    push    cx                      ; Use CX temporarily for port addresses
+    push    dx
+
+    ; Determine video adapter ports based on segment
+    mov     bx, [_active_video_segment]
+    mov     cx, #$03D4              ; Default to Color CRTC Index Port
+    cmp     bx, #$B000
+    jne     enable_color_ports      ; If not MDA, ports are already correct
+    mov     cx, #$03B4              ; Is MDA, set MDA CRTC Index Port
+enable_color_ports:
+    ; CX now holds the correct Index Port (03B4h or 03D4h)
+    ; CX+1 will be the Data Port
+
+    ; --- Set Cursor Start Scan Line (CRTC Register 0Ah) ---
+    mov     dx, cx                  ; DX = Index Port
+    mov     al, #$0A                ; Index for Cursor Start Register
+    out     dx, al
+
+    inc     dx                      ; DX = Data Port (Index + 1)
+    in      al, dx                  ; Read current value of Register 0Ah
+
+    ; Preserve adapter-specific bits (optional but good practice)
+    ; For Color, mask is C0h (11000000b), Bits 6,7
+    ; For MDA, mask could also be C0h (or FFh if we don't care)
+    ; Let's use C0h for both for simplicity here.
+    and     al, #$C0                ; Preserve bits 6, 7
+
+    mov     bl, [bp+4]              ; Get cursor_start parameter from stack
+    or      al, bl                  ; Combine preserved bits with new start scanline
+
+    ; --- Ensure cursor is VISIBLE (Clear bit 5) ---
+    and     al, #$DF                ; Mask 11011111b (~0x20) - Clear disable bit
+
+    ; DX still points to Data Port
+    out     dx, al                  ; Write modified value back to Register 0Ah
+
+    ; --- Set Cursor End Scan Line (CRTC Register 0Bh) ---
+    dec     dx                      ; DX = Index Port
+    mov     al, #$0B                ; Index for Cursor End Register
+    out     dx, al
+
+    inc     dx                      ; DX = Data Port
+    in      al, dx                  ; Read current value of Register 0Bh
+
+    ; Preserve adapter-specific bits (optional but good practice)
+    ; For Color, mask is E0h (11100000b), Bits 5,6,7 (includes skew)
+    ; For MDA, mask could also be E0h (or C0h if ignoring skew)
+    ; Let's use E0h for both for simplicity here.
+    and     al, #$E0                ; Preserve bits 5, 6, 7
+
+    mov     bl, [bp+6]              ; Get cursor_end parameter from stack
+    or      al, bl                  ; Combine preserved bits with new end scanline
+
+    ; DX still points to Data Port
+    out     dx, al                  ; Write modified value back to Register 0Bh
+
+    pop     dx                     
+    pop     cx
+    pop     bx
+    pop     ax
+    pop     bp                      
+    ret                            
+
+;----------------------------------------------------------------------------
+; void disable_cursor();
+;----------------------------------------------------------------------------
+; Disables (hides) the cursor.
+; Works for both MDA (ports 03B4/B5) and CGA/EGA/VGA (ports 03D4/D5)
+; by checking _active_video_segment.
+; Uses direct write for Color path (matches C code).
+; Uses robust RMW for MDA path.
+; Assumes Real Mode execution.
+
+.global _video_disable_blink
+_video_disable_blink:
+    push    ax                      ; Save registers used
+    push    bx
+    push    cx                      ; Use CX temporarily for port addresses
+    push    dx
+
+    ; Determine video adapter ports based on segment
+    mov     bx, [_active_video_segment]
+    mov     cx, #$03D4              ; Default to Color CRTC Index Port
+    cmp     bx, #$B000
+    jne     disable_color_path      ; If not MDA, jump to color logic
+
+; --- MDA Path (Disable Cursor - Robust RMW) ---
+disable_mda_path:
+    mov     dx, #$03B4              ; MDA CRTC Index Register
+    mov     al, #$0A                ; Index: Cursor Start Register
+    out     dx, al
+
+    inc     dx                      ; DX = MDA CRTC Data Register (03B5h)
+    in      al, dx                  ; Read current Cursor Start value
+    or      al, #$20                ; Set bit 5 (Disable cursor)
+
+    ; RMW requires re-selecting index before writing data
+    push    ax                      ; Save modified value
+
+    dec     dx                      ; DX = Index Port (03B4h)
+    mov     al, #$0A                ; Reload Index: Cursor Start Register
+    out     dx, al                  ; Reselect index
+
+    inc     dx                      ; DX = Data Port (03B5h)
+    pop     ax                      ; Restore modified value
+    out     dx, al                  ; Write modified value back
+    jmp     disable_done            ; Go to exit
+
+; --- Color Path (Disable Cursor - Direct Write 0x20) ---
+disable_color_path:
+    mov     dx, #$03D4              ; Color CRTC Index Register
+    mov     al, #$0A                ; Index for Cursor Start Register
+    out     dx, al
+
+    inc     dx                      ; DX = Color CRTC Data Register (03D5h)
+    mov     al, #$20                ; Value 0010 0000b: Sets bit 5 (disable), clears scanline bits
+    out     dx, al                  ; Write directly to Register 0Ah
+
+disable_done:
+    pop     dx                     
+    pop     cx
+    pop     bx
+    pop     ax
+    ret                            

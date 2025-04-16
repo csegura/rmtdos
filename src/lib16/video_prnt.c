@@ -12,7 +12,7 @@
 // 1 line of 80-col text, plus "\0", rounded up.
 #define BUF_LEN 82
 
-int video_printf(void *vseg, int x, int y, uint8_t attr, const char *fmt, ...) {
+int video_printf(int x, int y, uint8_t attr, const char *fmt, ...) {
   va_list ap;
   int r;
   char tmp[BUF_LEN];
@@ -21,7 +21,7 @@ int video_printf(void *vseg, int x, int y, uint8_t attr, const char *fmt, ...) {
   r = vsprintf(tmp, fmt, ap);
   va_end(ap);
 
-  video_write_str(vseg, x, y, attr, tmp);
+  video_write_str(x, y, attr, tmp);
 
   return r;
 }

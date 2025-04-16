@@ -8,8 +8,8 @@
 #include <string.h>
 
 #include "lib16/types.h"
-#include "lib16/x86.h"
 #include "lib16/video.h"
+#include "lib16/x86.h"
 
 #include "server/bufmgr.h"
 #include "server/debug.h"
