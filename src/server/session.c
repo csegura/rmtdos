@@ -187,8 +187,10 @@ void session_mgr_update_all() {
   out_ph->payload_len = htons(payload_len);
   out_ph->pkt_type = htons(V1_VGA_TEXT);
 
-  resp->text_rows = video.text_rows;
-  resp->text_cols = video.text_cols;
+  resp->text_rows = vga.text_rows;
+  resp->text_cols = vga.text_cols;
+  resp->cursor_row = vga.cursor_row;
+  resp->cursor_col = vga.cursor_col;
   resp->offset = htons(offset);
   resp->count = htons(word_count * VIDEO_WORD);
 

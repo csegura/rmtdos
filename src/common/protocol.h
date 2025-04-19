@@ -123,6 +123,8 @@ struct StatusResponse {
 struct VideoText {
   uint8_t text_rows; // Current height of the screen
   uint8_t text_cols; // Current width of the screen
+  uint8_t cursor_row; // Current row of the cursor
+  uint8_t cursor_col; // Current column of the cursor
   uint16_t offset;   // Byte offset from $b800:0
   uint16_t count;    // Count of BYTES of data in packet
 };

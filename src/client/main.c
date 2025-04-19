@@ -171,8 +171,13 @@ void process_incoming_video_text(const uint8_t *buf, size_t received) {
 
   memcpy(rh->video_text_buffer + offset, data, count);
 
-  rh->text_rows = video->text_rows;
-  rh->text_cols = video->text_cols;
+  rh->text_rows = vga->text_rows;
+  rh->text_cols = vga->text_cols;
+
+  // we already have a place to store the cursor position
+  rh->status.cursor_row = vga->cursor_row;
+  rh->status.cursor_col = vga->cursor_col;
+
   update_session_window(rh, offset, count);
 }
 

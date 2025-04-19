@@ -200,6 +200,13 @@ void update_session_window(struct RemoteHost *rh, uint16_t video_offset,
     }
     wattroff(g_session_window, COLOR_PAIR(g_ncurses_colors[0x4f]));
   }
+
+  // show a "cursor" at your current position
+  if (OK == wmove(g_session_window, rh->status.cursor_row, rh->status.cursor_col)) {
+    wattron(g_session_window, COLOR_PAIR(MY_COLOR_HEADER));
+    waddch(g_session_window, ' ' | A_REVERSE);
+    wattroff(g_session_window, COLOR_PAIR(MY_COLOR_HEADER));
+  }
 }
 
 void init_ncurses() {
