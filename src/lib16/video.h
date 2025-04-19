@@ -10,6 +10,7 @@
 
 #define VIDEO_ROWS 25
 #define VIDEO_COLS 80
+#define VIDEO_WORD 2
 #define VIDEO_SIZE (VIDEO_ROWS * VIDEO_COLS * VIDEO_WORD)
 
 // Initialize video functions
@@ -18,10 +19,7 @@
 extern uint16_t video_init();
 
 // Store the segment base address
-extern uint16_t active_video_segment;
-
-// Video WORD size depends on (MDA/COLOR)
-#define VIDEO_WORD (active_video_segment == 0xB800 ? 2 : 1)
+extern uint16_t video_address;
 
 // Returns video segment base address.
 extern uint16_t video_get_segment();

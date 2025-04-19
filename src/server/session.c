@@ -72,6 +72,7 @@ struct Session *session_mgr_start(const struct Buffer *buffer) {
   }
 
   s->t_last_recv = x86_read_bios_tick_clock();
+  s->video_chksum = 0;
 
   return s;
 }
@@ -79,6 +80,7 @@ struct Session *session_mgr_start(const struct Buffer *buffer) {
 void session_mgr_reclaim(struct Session *s) { memset(s, 0, sizeof(*s)); }
 
 void session_mgr_update(struct Session *s) {}
+
 
 void session_mgr_update_all() {
   struct EthernetHeader *out_eh = (struct EthernetHeader *)(g_send_buffer);
@@ -132,19 +134,20 @@ void session_mgr_update_all() {
   if (video_next_row >= video.text_rows) {
     video_next_row = 0;
   }
-
-  // performance !!
+  
+  // We are at the begining?
   if (video_next_row == 0) {
-    video_disable_blink();
-    video_curr_chksum = video_checksum_frame_buffer(0, video.text_rows * video.text_cols * VIDEO_WORD);
-    video_enable_blink();
-    if (video_curr_chksum != video_chksum) {
-      video_chksum = video_curr_chksum;
-    } else {
+    // Check if screen has been updated
+    video_curr_chksum = video_checksum_frame_buffer(0, video.text_rows * video.text_cols * VIDEO_WORD);    
+    if (video_curr_chksum == video_chksum) {
       // No changes to the video frame buffer.  Don't send anything.
       return;
+    } else {
+      // Go ahead
+      video_chksum = video_curr_chksum;      
     }
   }
+
 
   // Compute how many rows we can fit into an Ethernet frame given the current
   // row width.
@@ -165,6 +168,7 @@ void session_mgr_update_all() {
 #if DEBUG
   video_printf(40, 22, 11, "rows: %d    ;", rows);
 #endif
+ 
 
   // How many words to copy, and from where?
   offset = video_next_row * video.text_cols * VIDEO_WORD;
@@ -187,10 +191,10 @@ void session_mgr_update_all() {
   out_ph->payload_len = htons(payload_len);
   out_ph->pkt_type = htons(V1_VGA_TEXT);
 
-  resp->text_rows = vga.text_rows;
-  resp->text_cols = vga.text_cols;
-  resp->cursor_row = vga.cursor_row;
-  resp->cursor_col = vga.cursor_col;
+  resp->text_rows = video.text_rows;
+  resp->text_cols = video.text_cols;
+  resp->cursor_row = video.cursor_row;
+  resp->cursor_col = video.cursor_col;
   resp->offset = htons(offset);
   resp->count = htons(word_count * VIDEO_WORD);
 
@@ -207,10 +211,8 @@ void session_mgr_update_all() {
     if (!memcmp(s->mac_addr, null_if_addr, ETH_ALEN)) {
       continue;
     }
-
     memcpy(out_eh->dest_mac_addr, s->mac_addr, ETH_ALEN);
     out_ph->session_id = htonl(s->session_id);
     pktdrv_send(g_send_buffer, COMBINED_HEADER_LEN + payload_len);
   }
-
 }

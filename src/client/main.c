@@ -171,12 +171,12 @@ void process_incoming_video_text(const uint8_t *buf, size_t received) {
 
   memcpy(rh->video_text_buffer + offset, data, count);
 
-  rh->text_rows = vga->text_rows;
-  rh->text_cols = vga->text_cols;
+  rh->text_rows = video->text_rows;
+  rh->text_cols = video->text_cols;
 
   // we already have a place to store the cursor position
-  rh->status.cursor_row = vga->cursor_row;
-  rh->status.cursor_col = vga->cursor_col;
+  rh->status.cursor_row = video->cursor_row;
+  rh->status.cursor_col = video->cursor_col;
 
   update_session_window(rh, offset, count);
 }
@@ -236,7 +236,7 @@ void start_remote_control(struct RemoteHost *rh) {
 void process_stdin_menu_mode() {
   int c = getch();
 
-  if (c == EXIT_WCH_CODE) {
+  if (c == EXIT_WCH_CODE || c == KEY_F(12) || c == 27) {
     g_running = 0;
     return;
   }

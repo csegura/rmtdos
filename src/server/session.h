@@ -21,6 +21,9 @@ struct Session {
 
   // MAC address of the client.
   uint8_t mac_addr[ETH_ALEN];
+
+  // Checksum of the video data that we sent to this client.
+  uint16_t video_chksum;
 };
 
 extern void session_mgr_init();
