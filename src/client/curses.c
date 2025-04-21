@@ -138,7 +138,7 @@ void update_hud(struct RemoteHost *rh) {
     return;
   }
 
-  int y = rh->text_rows + 1;
+  int y = rh->text_rows + 2;
 
   char mac_addr[MAC_ADDR_FMT_LEN];
   fmt_mac_addr(mac_addr, sizeof(mac_addr), rh->if_addr);
@@ -152,10 +152,27 @@ void update_hud(struct RemoteHost *rh) {
   snprintf(stale, sizeof(stale), "%ld.%06ld", tv_stale.tv_sec,
            tv_stale.tv_usec);
 
-  mvwprintw(rh->window, ++y, 0, "addr: %s, rows: %d, cols:%d, latency:%s",
-            mac_addr, rh->text_rows, rh->text_cols, stale);
+  mvwprintw(rh->window, ++y, 0, "addr: %s, (%dx%d), %d:%d latency:%s", mac_addr,
+            rh->text_rows, rh->text_cols, rh->status.cursor_row,
+            rh->status.cursor_col, stale);
 
-  mvwprintw(rh->window, ++y, 0, "<ALT-ESC> to Exit");
+  mvwprintw(rh->window, ++y, 0,
+            "<Ctrl+F12> to Exit | <Ctrl+F11> to Reload Keymap");
+}
+
+void debug_remote_host(struct RemoteHost *rh) {
+  if (OK != wmove(g_debug_window, 0, 0)) {
+    return;
+  }
+
+  int y = 0;
+  wclrtobot(g_debug_window);
+  box(g_debug_window, 0, 0);
+
+  mvwprintw(g_debug_window, y++, 1, "Remote Host Debug");
+  mvwprintw(g_debug_window, y++, 1, "addr: %s", rh->if_addr);
+  mvwprintw(g_debug_window, y++, 1, "rows: %d", rh->text_rows);
+  mvwprintw(g_debug_window, y++, 1, "cols: %d", rh->text_cols);
 }
 
 void update_session_window(struct RemoteHost *rh, uint16_t vga_offset,
@@ -187,17 +204,21 @@ void update_session_window(struct RemoteHost *rh, uint16_t vga_offset,
     }
   }
 
+  debug_remote_host(rh);
+
   // If our ncurses window is larger than the remote screen resolution,
   // then clear the area that is outside of the remote end's screen resolution.
   // Then display connection stats below it.
   if (OK == wmove(g_session_window, rh->text_rows, 0)) {
+    fprintf(stderr, " - Clearing %d rows\n", rh->text_rows);
     int y = rh->text_rows;
-    wclrtobot(g_session_window);
+    // wclrtobot(g_session_window);
 
     wattron(g_session_window, COLOR_PAIR(g_ncurses_colors[0x4f]));
-    for (int x = 0; x < rh->text_cols; ++x) {
-      mvwaddstr(g_session_window, y, x, g_cp437_table[0xcd]);
-    }
+    mvwprintw(g_session_window, y, 0, "%*c", rh->text_cols, ' ');
+    // for (int x = 0; x < rh->text_cols; ++x) {
+    //   mvwaddstr(g_session_window, y, x, g_cp437_table[0xcd]);
+    // }
     wattroff(g_session_window, COLOR_PAIR(g_ncurses_colors[0x4f]));
   }
 
@@ -222,7 +243,7 @@ void init_ncurses() {
   g_debug_window = newwin(5, 80, 20, 0);
   g_session_window = newwin(0, 0, 0, 0);
 
-  keypad(g_session_window, TRUE);
+  // keypad(g_session_window, TRUE);
   meta(g_session_window, TRUE);
   nodelay(g_session_window, TRUE);
   nonl();

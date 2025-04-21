@@ -28,6 +28,7 @@
 #include "client/globals.h"
 #include "client/hostlist.h"
 #include "client/keyboard.h"
+#include "client/keymaplib.h"
 #include "client/network.h"
 #include "client/util.h"
 #include "common/protocol.h"
@@ -70,6 +71,8 @@ static struct timeval g_last_probe = {0};
 // Non-NULL if we're actively controlling a server.
 struct RemoteHost *g_active_host = NULL;
 
+int keyb[3] = {0};
+
 void update_probing_window(const struct RawSocket *rs) {
   struct timeval tv_now;
   char mac_tmp[MAC_ADDR_FMT_LEN];
@@ -84,7 +87,7 @@ void update_probing_window(const struct RawSocket *rs) {
             rs->ethertype);
   ++y;
   mvwprintw(w, y, 1, RMTDOS_VERSION);
-  mvwprintw(w, y, 50, "<ALT-ESC> to exit");
+  mvwprintw(w, y, 50, "<ALT-Q> to exit");
   ++y;
   mvwprintw(w, y, 1, "%s: %s", rs->if_name,
             fmt_mac_addr(mac_tmp, sizeof(mac_tmp), rs->if_addr));
@@ -234,13 +237,19 @@ void start_remote_control(struct RemoteHost *rh) {
 // Called when there is data on STDIN and the UI is in the "menu mode" (waiting
 // for user to select a server to connect to).
 void process_stdin_menu_mode() {
-  int c = getch();
 
-  if (c == EXIT_WCH_CODE) {
+  keyb[0] = getch();
+
+  // Check for ALT-Q
+  if (keyb[0] == 0x1b) {
+    keyb[1] = getch();
+    if (keyb[1] == 0x71) {
     g_running = 0;
     return;
+    }
   }
 
+  int c = keyb[0];
   if ((c >= '0') && (c <= '9')) {
     struct RemoteHost *rh = hostlist_find_by_index(c - '0');
     if (rh) {
@@ -300,7 +309,9 @@ static void print_usage(const char *progname) {
          ETHERTYPE_RMTDOS);
   printf("  -i  Name of local ethernet device (default: %s).\n",
          DEFAULT_ETH_DEV);
-  printf("  -k  Dump keyboard layout to text file for debugging.\n");
+  printf("  -k  Name of keymap file (default %s).\n", g_keymap_filename);
+  printf("  -B  Force Basic colors.\n");
+  printf("  -T  Change TERM to xterm-256colors.\n");
 }
 
 int main(int argc, char **argv) {
@@ -309,6 +320,9 @@ int main(int argc, char **argv) {
   uint8_t dest_addr[ETH_ALEN] = {0};
   int i;
   int opt;
+  int basic_colors = 0;
+  const char *old_term = NULL;
+  g_keymap_filename = "./xterm.kmap";
 
   // http://yjlv.blogspot.com/2015/10/displaying-unicode-with-ncurses-in-c.html
   setlocale(LC_ALL, "");
@@ -317,7 +331,7 @@ int main(int argc, char **argv) {
   memcpy(dest_addr, broadcast_addr, ETH_ALEN);
   hostlist_create();
 
-  while ((opt = getopt(argc, argv, "d:e:i:kl")) != -1) {
+  while ((opt = getopt(argc, argv, "d:e:i:Bl:Tl:B:k:")) != -1) {
     switch (opt) {
       case 'i':
         if_name = optarg;
@@ -341,13 +355,31 @@ int main(int argc, char **argv) {
         break;
 
       case 'k':
-        dump_keyboard_table(stdout);
-        return EXIT_SUCCESS;
+        printf("Keymap file: %s\n", optarg);
+        g_keymap_filename = strdup(optarg);
+        break;
+
+      case 'B':
+        basic_colors = 1;
+        break;
+
+      case 'T':
+        // get terminal type from environment
+        old_term = getenv("TERM");
+        setenv("TERM", "xterm-256color", 1);
+        break;
 
       default: /* '?' */
         print_usage(argv[0]);
         return EXIT_FAILURE;
     }
+  }
+
+  // load keymap
+  fprintf(stdout, "Loading keymap from file: %s\n", g_keymap_filename);
+  if (keymap_load(g_keymap_filename) < 0) {
+    fprintf(stderr, "Failed to load keymap.\n");
+    return EXIT_FAILURE;
   }
 
   if (optind < argc) {
@@ -381,7 +413,7 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  init_ncurses();
+  init_ncurses(basic_colors);
 
   // Ping broadcast address, to trigger a response from all clients.
   send_status_req(&rs, NULL);
@@ -403,7 +435,7 @@ int main(int argc, char **argv) {
     for (int n = 0; n < nfds; ++n) {
       if (events[n].data.fd == STDIN_FILENO) {
         if (g_active_host) {
-          process_stdin_session_mode(&rs);
+          process_stdin_session_mode(&rs, g_active_host);
         } else {
           process_stdin_menu_mode();
         }
@@ -419,6 +451,11 @@ int main(int argc, char **argv) {
     refresh_windows();
   }
 
+  // Restore the original terminal type.
+  if (old_term) {
+    setenv("TERM", old_term, 1);
+  }
+  keymap_free();
   shutdown_ncurses();
 
   close(epoll_fd);
