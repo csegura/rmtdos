@@ -36,6 +36,16 @@ typedef struct {
 // Global array to store the original sequences, parallel to g_keymap list order
 OriginalSeqData* g_org_seq = NULL;
 
+char *KeyFlags[] = {
+    "", "", "",
+    "KS_SHIFT", // 0x03
+    "KS_CONTROL", // 0x04
+    "", "", 
+    "KS_SHIFT + KS_CONTROL", // 0x07
+    "KS_ALT", // 0x08
+};
+
+
 // Count entries in the global linked list
 int count_map_entries() {
     int count              = 0;
@@ -78,14 +88,24 @@ void clear_status(void) {
     refresh();
 }
 
+char *format_flags(uint8_t flags) {
+    return KeyFlags[flags];
+}
+
 void display_map_list(HighlightStyle style) {
     erase();
     int term_width = getmaxx(stdscr);
     mvprintw(0, 1, "Keymap Config: %s %s", g_keymap_filename ? g_keymap_filename : "<No File>",
     g_dirty_flag ? "[MODIFIED]" : "");
     mvhline(1, 1, '-', term_width > 2 ? term_width - 2 : 0);
-    mvprintw(2, 1, "Description          | Original Sequence        | Current Sequence         ");
-    mvprintw(LINES - 2, 1, "Up/Down: Navigate | Enter: Edit Seq | S: Save | Q: Quit");
+    
+    
+    attron(A_REVERSE);
+    mvhline(2, 1, ' ', term_width > 2 ? term_width - 2 : 0);
+    mvprintw(2, 1, " Description       | Original Sequence    | Current Sequence     | Scan | Ascii| Flags");
+    mvhline(LINES - 2, 1, ' ', term_width > 2 ? term_width - 2 : 0);
+    mvprintw(LINES - 2, 1, "Up/Down: Navigate | Enter: Edit KEY | S: Save | Q: Quit");
+    attroff(A_REVERSE);
 
     int list_height = LINES - 5;
     if (list_height < 1)
@@ -112,33 +132,35 @@ void display_map_list(HighlightStyle style) {
 
         // default normal
         attr_t highlight_attr = A_NORMAL;
+        
         // modified
         if (g_org_seq[map_index].is_modified) {
-            highlight_attr = COLOR_PAIR(MODIFIED_PAIR);
-            // attron(highlight_attr);
+            highlight_attr = COLOR_PAIR(MODIFIED_PAIR);            
         }
+
         // selected
         if (map_index == g_cur_itm_idx) {
             highlight_attr = (style == HIGHLIGHT_CAPTURE && has_colors()) ?
             COLOR_PAIR(CAPTURE_PAIR) :
-            A_REVERSE;
+            COLOR_PAIR(HIGHLIGHT_PAIR);
         }
 
         attron(highlight_attr);
 
-        mvprintw(start_row + i, 1, "%-20.20s | %-24.24s | %-24.24s",
-        entry->description ? entry->description : "<NoDesc>", orig_seq_hex_buf,
-        curr_seq_hex_buf);
+        
+        // Use %02X to format uint8_t as 2-digit uppercase hex with leading zero if needed
+        mvprintw(start_row + i, 1, "%-18.18s | %-20.20s | %-20.20s | 0x%02X | 0x%02X | 0x%02X | %s",
+            entry->description ? entry->description : "<NoDesc>",
+            orig_seq_hex_buf,       // Original sequence
+            curr_seq_hex_buf,       // Current sequence
+            entry->keydos.bios_scan_code, // Scan Code
+            entry->keydos.ascii_value,    // ASCII Value
+            entry->keydos.flags_17,       // Flags
+            KeyFlags[entry->keydos.flags_17] 
+        );  
 
         clrtoeol();
-
-        // if (highlight_attr & A_NORMAL)  {
-        attroff(highlight_attr);
-        //}
-
-        // if (map_index == g_cur_itm_idx || orig_info->is_modified) {
-        //     attroff(highlight_attr);
-        // }
+        attroff(highlight_attr);        
     }
 }
 
@@ -186,22 +208,27 @@ unsigned char* capture_sequence(size_t* out_len) {
             } else {
                 buffer[0]  = (unsigned char)first_ch;
                 buffer_len = 1;
-                // ungetch(next_ch);
-                //  Directly add the second character if buffer has space
-                if (buffer_cap < 2) { // Ensure space for 2nd char (unlikely needed but safe)
-                    buffer = realloc(buffer, 8); // Realloc if initial cap was tiny
+                
+                // Directly add the second character if buffer has space
+                // Ensure space for 2nd char (unlikely needed but safe)
+                if (buffer_cap < 2) { 
+                    // Realloc if initial cap was tiny
+                    buffer = realloc(buffer, 8); 
                     if (!buffer) {
                         perror("realloc failed");
                         display_status("ERROR: Memory allocation failed!");
                         cancelled = 1;
-                        free(buffer); // Free original buffer if realloc failed
+                        free(buffer); 
                         buffer = NULL;
                     }
                     buffer_cap = 8;
                 }
-                if (buffer) { // Check if allocation succeeded
-                    buffer[1] = (unsigned char)next_ch; // Add the second char read
-                    buffer_len = 2;                     // Length is now 2
+                // Check if allocation succeeded
+                if (buffer) { 
+                    // Add the second char read
+                    buffer[1] = (unsigned char)next_ch; 
+                    // Length is now 2
+                    buffer_len = 2;                     
                 }
             }
         }
@@ -348,8 +375,7 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Error: Your terminal does not support color.\n");
     } else {
         start_color();
-        // Define color pairs: (pair_id, foreground, background)
-        // Use standard A_REVERSE look if possible for default
+        // color pairs: (pair_id, foreground, background)        
         init_pair(HIGHLIGHT_PAIR, COLOR_WHITE, COLOR_BLUE); // Example: White text on Blue background
         // For consistency, maybe just use A_REVERSE as the 'normal' style
         // and only define the special green pair. Let's try that.
