@@ -1,0 +1,297 @@
+// Keyboard Map for Linux Terminal -> DOS BIOS Keystrokes
+// Format: Description | Sequence (Hex) | Scan (Hex) | ASCII (Hex) | Flags (Hex)
+// Flags: KS_SHIFT=0x03, KS_CONTROL=0x04, KS_ALT=0x08 (Combine with |)
+//
+// Description           // Sequence (Hex)                             // Scan // ASCII // Flags KS_SHIFT=0x03, KS_CONTROL=0x04, KS_ALT=0x08                                     
+//
+// --- Standard ASCII Printable ---
+//
+a                        |\x61                                         | 0x1E | 0x61 | 0x00
+b                        |\x62                                         | 0x30 | 0x62 | 0x00
+c                        |\x63                                         | 0x2E | 0x63 | 0x00
+d                        |\x64                                         | 0x20 | 0x64 | 0x00
+e                        |\x65                                         | 0x12 | 0x65 | 0x00
+f                        |\x66                                         | 0x21 | 0x66 | 0x00
+g                        |\x67                                         | 0x22 | 0x67 | 0x00
+h                        |\x68                                         | 0x23 | 0x68 | 0x00
+i                        |\x69                                         | 0x17 | 0x69 | 0x00
+j                        |\x6a                                         | 0x24 | 0x6a | 0x00
+k                        |\x6b                                         | 0x25 | 0x6b | 0x00
+l                        |\x6c                                         | 0x26 | 0x6c | 0x00
+m                        |\x6d                                         | 0x32 | 0x6d | 0x00
+n                        |\x6e                                         | 0x31 | 0x6e | 0x00
+o                        |\x6f                                         | 0x18 | 0x6f | 0x00
+p                        |\x70                                         | 0x19 | 0x70 | 0x00
+q                        |\x71                                         | 0x10 | 0x71 | 0x00
+r                        |\x72                                         | 0x13 | 0x72 | 0x00
+s                        |\x73                                         | 0x1F | 0x73 | 0x00
+t                        |\x74                                         | 0x14 | 0x74 | 0x00
+u                        |\x75                                         | 0x16 | 0x75 | 0x00
+v                        |\x76                                         | 0x2F | 0x76 | 0x00
+w                        |\x77                                         | 0x11 | 0x77 | 0x00
+x                        |\x78                                         | 0x2D | 0x78 | 0x00
+y                        |\x79                                         | 0x15 | 0x79 | 0x00
+z                        |\x7a                                         | 0x2C | 0x7a | 0x00
+A                        |\x41                                         | 0x1E | 0x41 | 0x03  // KS_SHIFT
+B                        |\x42                                         | 0x30 | 0x42 | 0x03  // KS_SHIFT
+C                        |\x43                                         | 0x2E | 0x43 | 0x03  // KS_SHIFT
+D                        |\x44                                         | 0x20 | 0x44 | 0x03  // KS_SHIFT
+E                        |\x45                                         | 0x12 | 0x45 | 0x03  // KS_SHIFT
+F                        |\x46                                         | 0x21 | 0x46 | 0x03  // KS_SHIFT
+G                        |\x47                                         | 0x22 | 0x47 | 0x03  // KS_SHIFT
+H                        |\x48                                         | 0x23 | 0x48 | 0x03  // KS_SHIFT
+I                        |\x49                                         | 0x17 | 0x49 | 0x03  // KS_SHIFT
+J                        |\x4A                                         | 0x24 | 0x4A | 0x03  // KS_SHIFT
+K                        |\x4B                                         | 0x25 | 0x4B | 0x03  // KS_SHIFT
+L                        |\x4C                                         | 0x26 | 0x4C | 0x03  // KS_SHIFT
+M                        |\x4D                                         | 0x32 | 0x4D | 0x03  // KS_SHIFT
+N                        |\x4E                                         | 0x31 | 0x4E | 0x03  // KS_SHIFT
+O                        |\x4F                                         | 0x18 | 0x4F | 0x03  // KS_SHIFT
+P                        |\x50                                         | 0x19 | 0x50 | 0x03  // KS_SHIFT
+Q                        |\x51                                         | 0x10 | 0x51 | 0x03  // KS_SHIFT
+R                        |\x52                                         | 0x13 | 0x52 | 0x03  // KS_SHIFT
+S                        |\x53                                         | 0x1F | 0x53 | 0x03  // KS_SHIFT
+T                        |\x54                                         | 0x14 | 0x54 | 0x03  // KS_SHIFT
+U                        |\x55                                         | 0x16 | 0x55 | 0x03  // KS_SHIFT
+V                        |\x56                                         | 0x2F | 0x56 | 0x03  // KS_SHIFT
+W                        |\x57                                         | 0x11 | 0x57 | 0x03  // KS_SHIFT
+X                        |\x58                                         | 0x2D | 0x58 | 0x03  // KS_SHIFT
+Y                        |\x59                                         | 0x15 | 0x59 | 0x03  // KS_SHIFT
+Z                        |\x5A                                         | 0x2C | 0x5A | 0x03  // KS_SHIFT
+1                        |\x31                                         | 0x02 | 0x31 | 0x00
+2                        |\x32                                         | 0x03 | 0x32 | 0x00
+3                        |\x33                                         | 0x04 | 0x33 | 0x00
+4                        |\x34                                         | 0x05 | 0x34 | 0x00
+5                        |\x35                                         | 0x06 | 0x35 | 0x00
+6                        |\x36                                         | 0x07 | 0x36 | 0x00
+7                        |\x37                                         | 0x08 | 0x37 | 0x00
+8                        |\x38                                         | 0x09 | 0x38 | 0x00
+9                        |\x39                                         | 0x0A | 0x39 | 0x00
+0                        |\x30                                         | 0x0B | 0x30 | 0x00
+!                        |\x21                                         | 0x02 | 0x21 | 0x03  // KS_SHIFT
+@                        |\x40                                         | 0x03 | 0x40 | 0x03  // KS_SHIFT
+#                        |\x23                                         | 0x04 | 0x23 | 0x03  // KS_SHIFT
+$                        |\x24                                         | 0x05 | 0x24 | 0x03  // KS_SHIFT
+%                        |\x25                                         | 0x06 | 0x25 | 0x03  // KS_SHIFT
+^                        |\x5E                                         | 0x07 | 0x5E | 0x03  // KS_SHIFT
+&                        |\x26                                         | 0x08 | 0x26 | 0x03  // KS_SHIFT
+*                        |\x2A                                         | 0x09 | 0x2A | 0x03  // KS_SHIFT
+(                        |\x28                                         | 0x0A | 0x28 | 0x03  // KS_SHIFT
+)                        |\x29                                         | 0x0B | 0x29 | 0x03  // KS_SHIFT
+-                        |\x2D                                         | 0x0C | 0x2D | 0x00
+_                        |\x5F                                         | 0x0C | 0x5F | 0x03  // KS_SHIFT
+=                        |\x3D                                         | 0x0D | 0x3D | 0x00
++                        |\x2B                                         | 0x0D | 0x2B | 0x03  // KS_SHIFT
+[                        |\x5B                                         | 0x1A | 0x5B | 0x00
+{                        |\x7B                                         | 0x1A | 0x7B | 0x03  // KS_SHIFT
+]                        |\x5D                                         | 0x1B | 0x5D | 0x00
+}                        |\x7D                                         | 0x1B | 0x7D | 0x03  // KS_SHIFT
+;                        |\x3B                                         | 0x27 | 0x3B | 0x00
+:                        |\x3A                                         | 0x27 | 0x3A | 0x03  // KS_SHIFT
+'                        |\x27                                         | 0x28 | 0x27 | 0x00
+"                        |\x22                                         | 0x28 | 0x22 | 0x03  // KS_SHIFT
+\                        |\x5C                                         | 0x2B | 0x5C | 0x00 
+,                        |\x2C                                         | 0x33 | 0x2C | 0x00
+<                        |\x3C                                         | 0x33 | 0x3C | 0x03  // KS_SHIFT
+.                        |\x2E                                         | 0x34 | 0x2E | 0x00
+>                        |\x3E                                         | 0x34 | 0x3E | 0x03  // KS_SHIFT
+/                        |\x2F                                         | 0x35 | 0x2F | 0x00
+?                        |\x3F                                         | 0x35 | 0x3F | 0x03  // KS_SHIFT
+`                        |\x60                                         | 0x29 | 0x60 | 0x00
+~                        |\x7E                                         | 0x29 | 0x7E | 0x03  // KS_SHIFT
+Space                    |\x20                                         | 0x39 | 0x20 | 0x00
+//
+// --- Common Control/Special Keys ---
+//
+Enter                    |\x0d                                         | 0x1C | 0x0D | 0x00  // Carriage Return often sent
+Enter (LF)               |\x0a                                         | 0x1C | 0x0D | 0x00  // Also map Line Feed to Enter
+Tab                      |\x09                                         | 0x0F | 0x09 | 0x00
+Esc                      |\x1b                                         | 0x01 | 0x1B | 0x00
+Backspace                |\x7f                                         | 0x0E | 0x08 | 0x00  // DEL often sent for Backspace
+Backspace(C-H)           |\x08                                         | 0x0E | 0x08 | 0x00  // Map Ctrl+H too
+//
+// --- Control + Letter ---
+//
+Ctrl+A                   |\x01                                         | 0x1E | 0x01 | 0x04  // KS_CONTROL
+Ctrl+B                   |\x02                                         | 0x30 | 0x02 | 0x04  // KS_CONTROL
+Ctrl+C                   |\x03                                         | 0x2E | 0x03 | 0x04  // KS_CONTROL
+Ctrl+D                   |\x04                                         | 0x20 | 0x04 | 0x04  // KS_CONTROL
+Ctrl+E                   |\x05                                         | 0x12 | 0x05 | 0x04  // KS_CONTROL
+Ctrl+F                   |\x06                                         | 0x21 | 0x06 | 0x04  // KS_CONTROL
+Ctrl+G                   |\x07                                         | 0x22 | 0x07 | 0x04  // KS_CONTROL
+Ctrl+H                   |\x08                                         | 0x23 | 0x08 | 0x04  // KS_CONTROL
+Ctrl+I                   |\x09                                         | 0x17 | 0x09 | 0x04  // KS_CONTROL
+Ctrl+J                   |\x0A                                         | 0x24 | 0x0A | 0x04  // KS_CONTROL
+Ctrl+K                   |\x0B                                         | 0x25 | 0x0B | 0x04  // KS_CONTROL
+Ctrl+L                   |\x0C                                         | 0x26 | 0x0C | 0x04  // KS_CONTROL
+Ctrl+M                   |\x0D                                         | 0x32 | 0x0D | 0x04  // KS_CONTROL
+Ctrl+N                   |\x0E                                         | 0x31 | 0x0E | 0x04  // KS_CONTROL
+Ctrl+O                   |\x0F                                         | 0x18 | 0x0F | 0x04  // KS_CONTROL
+Ctrl+P                   |\x10                                         | 0x19 | 0x10 | 0x04  // KS_CONTROL
+Ctrl+Q                   |\x11                                         | 0x10 | 0x11 | 0x04  // KS_CONTROL
+Ctrl+R                   |\x12                                         | 0x13 | 0x12 | 0x04  // KS_CONTROL
+Ctrl+S                   |\x13                                         | 0x1F | 0x13 | 0x04  // KS_CONTROL
+Ctrl+T                   |\x14                                         | 0x14 | 0x14 | 0x04  // KS_CONTROL
+Ctrl+U                   |\x15                                         | 0x16 | 0x15 | 0x04  // KS_CONTROL
+Ctrl+V                   |\x16                                         | 0x2F | 0x16 | 0x04  // KS_CONTROL
+Ctrl+W                   |\x17                                         | 0x11 | 0x17 | 0x04  // KS_CONTROL
+Ctrl+X                   |\x18                                         | 0x2D | 0x18 | 0x04  // KS_CONTROL
+Ctrl+Y                   |\x19                                         | 0x15 | 0x19 | 0x04  // KS_CONTROL
+Ctrl+Z                   |\x1A                                         | 0x2C | 0x1A | 0x04  // KS_CONTROL
+//
+// --- Alt + Letter (Example using common ESC sequence) ---
+// These are HIGHLY terminal dependent, user may need to map these
+//
+Alt+a                    |\x1b\x61                                     | 0x1E | 0x00 | 0x08  // KS_ALT
+Alt+b                    |\x1b\x62                                     | 0x30 | 0x00 | 0x08  // KS_ALT
+Alt+c                    |\x1b\x63                                     | 0x2E | 0x00 | 0x08  // KS_ALT
+Alt+d                    |\x1b\x64                                     | 0x20 | 0x00 | 0x08  // KS_ALT
+Alt+e                    |\x1b\x65                                     | 0x12 | 0x00 | 0x08  // KS_ALT
+Alt+f                    |\x1b\x66                                     | 0x21 | 0x00 | 0x08  // KS_ALT
+Alt+g                    |\x1b\x67                                     | 0x22 | 0x00 | 0x08  // KS_ALT
+Alt+h                    |\x1b\x68                                     | 0x23 | 0x00 | 0x08  // KS_ALT
+Alt+i                    |\x1b\x69                                     | 0x17 | 0x00 | 0x08  // KS_ALT
+Alt+j                    |\x1b\x6a                                     | 0x24 | 0x00 | 0x08  // KS_ALT
+Alt+k                    |\x1b\x6b                                     | 0x25 | 0x00 | 0x08  // KS_ALT
+Alt+l                    |\x1b\x6c                                     | 0x26 | 0x00 | 0x08  // KS_ALT
+Alt+m                    |\x1b\x6d                                     | 0x32 | 0x00 | 0x08  // KS_ALT
+Alt+n                    |\x1b\x6e                                     | 0x31 | 0x00 | 0x08  // KS_ALT
+Alt+o                    |\x1b\x6f                                     | 0x18 | 0x00 | 0x08  // KS_ALT
+Alt+p                    |\x1b\x70                                     | 0x19 | 0x00 | 0x08  // KS_ALT
+Alt+q                    |\x1b\x71                                     | 0x10 | 0x00 | 0x08  // KS_ALT
+Alt+r                    |\x1b\x72                                     | 0x13 | 0x00 | 0x08  // KS_ALT
+Alt+s                    |\x1b\x73                                     | 0x1F | 0x00 | 0x08  // KS_ALT
+Alt+t                    |\x1b\x74                                     | 0x14 | 0x00 | 0x08  // KS_ALT
+Alt+u                    |\x1b\x75                                     | 0x16 | 0x00 | 0x08  // KS_ALT
+Alt+v                    |\x1b\x76                                     | 0x2F | 0x00 | 0x08  // KS_ALT
+Alt+w                    |\x1b\x77                                     | 0x11 | 0x00 | 0x08  // KS_ALT
+Alt+x                    |\x1b\x78                                     | 0x2D | 0x00 | 0x08  // KS_ALT
+Alt+y                    |\x1b\x79                                     | 0x15 | 0x00 | 0x08  // KS_ALT
+Alt+z                    |\x1b\x7a                                     | 0x2C | 0x00 | 0x08  // KS_ALT
+//
+// --- Function Keys (Example using common xterm/vt sequences) ---
+// These are HIGHLY terminal dependent, user may need to map these
+//
+F1                       |\x1b\x4f\x50                                 | 0x3B | 0x00 | 0x00  // ESC O P
+F2                       |\x1b\x4f\x51                                 | 0x3C | 0x00 | 0x00  // ESC O Q
+F3                       |\x1b\x4f\x52                                 | 0x3D | 0x00 | 0x00  // ESC O R
+F4                       |\x1b\x4f\x53                                 | 0x3E | 0x00 | 0x00  // ESC O S
+F5                       |\x1b\x5b\x31\x35\x7e                         | 0x3F | 0x00 | 0x00  // ESC [ 1 5 ~
+F6                       |\x1b\x5b\x31\x37\x7e                         | 0x40 | 0x00 | 0x00  // ESC [ 1 7 ~
+F7                       |\x1b\x5b\x31\x38\x7e                         | 0x41 | 0x00 | 0x00  // ESC [ 1 8 ~
+F8                       |\x1b\x5b\x31\x39\x7e                         | 0x42 | 0x00 | 0x00  // ESC [ 1 9 ~
+F9                       |\x1b\x5b\x32\x30\x7e                         | 0x43 | 0x00 | 0x00  // ESC [ 2 0 ~
+F10                      |\x1b\x5b\x32\x31\x7e                         | 0x44 | 0x00 | 0x00  // ESC [ 2 1 ~
+F11                      |\x1b\x5b\x32\x33\x7e                         | 0x57 | 0x00 | 0x00  // ESC [ 2 3 ~
+F12                      |\x1b\x5b\x32\x34\x7e                         | 0x58 | 0x00 | 0x00  // ESC [ 2 4 ~
+
+//
+// --- Modifier + Function Keys (Examples) ---
+// These are HIGHLY terminal dependent, user MUST map these
+//
+Shift+F1                 |\x1b\x5b\x31\x3b\x32\x50                     | 0x54 | 0x00 | 0x03  // KS_SHIFT (Scan code for S-F1 is 0x54)
+Ctrl+F1                  |\x1b\x5b\x31\x3b\x35\x50                     | 0x5E | 0x00 | 0x04  // KS_CONTROL (Scan code for C-F1 is 0x5E)
+Alt+F1                   |\x1b\x5b\x31\x3b\x33\x50                     | 0x68 | 0x00 | 0x08  // KS_ALT (Scan code for A-F1 is 0x68)
+Ctrl+Shift+F1            |\x1b\x5b\x31\x3b\x36\x50                     | 0x5E | 0x00 | 0x07  // KS_CONTROL | KS_SHIFT
+Shift+F2                 |\x1b\x5b\x31\x3b\x32\x51                     | 0x55 | 0x00 | 0x03
+Ctrl+F2                  |\x1b\x5b\x31\x3b\x35\x51                     | 0x5F | 0x00 | 0x04
+Alt+F2                   |\x1b\x5b\x31\x3b\x33\x51                     | 0x69 | 0x00 | 0x08
+Ctrl+Shift+F2            |\x1b\x5b\x31\x3b\x36\x51                     | 0x5F | 0x00 | 0x07
+Shift+F3                 |\x1b\x5b\x31\x3b\x32\x52                     | 0x56 | 0x00 | 0x03
+Ctrl+F3                  |\x1b\x5b\x31\x3b\x35\x52                     | 0x60 | 0x00 | 0x04
+Alt+F3                   |\x1b\x5b\x31\x3b\x33\x52                     | 0x6A | 0x00 | 0x08
+Ctrl+Shift+F3            |\x1b\x5b\x31\x3b\x36\x52                     | 0x60 | 0x00 | 0x07
+Shift+F4                 |\x1b\x5b\x31\x3b\x32\x53                     | 0x57 | 0x00 | 0x03
+Ctrl+F4                  |\x1b\x5b\x31\x3b\x35\x53                     | 0x61 | 0x00 | 0x04
+Alt+F4                   |\x1b\x5b\x31\x3b\x33\x53                     | 0x6B | 0x00 | 0x08
+Ctrl+Shift+F4            |\x1b\x5b\x31\x3b\x36\x53                     | 0x61 | 0x00 | 0x07
+Shift+F5                 |\x1b\x5b\x31\x3b\x32\x35\x7e                 | 0x59 | 0x00 | 0x03
+Ctrl+F5                  |\x1b\x5b\x31\x3b\x35\x35\x7e                 | 0x62 | 0x00 | 0x04
+Alt+F5                   |\x1b\x5b\x31\x3b\x33\x35\x7e                 | 0x6C | 0x00 | 0x08
+Ctrl+Shift+F5            |\x1b\x5b\x31\x3b\x36\x35\x7e                 | 0x62 | 0x00 | 0x07
+Shift+F6                 |\x1b\x5b\x31\x3b\x32\x37\x7e                 | 0x5A | 0x00 | 0x03
+Ctrl+F6                  |\x1b\x5b\x31\x3b\x35\x37\x7e                 | 0x63 | 0x00 | 0x04
+Alt+F6                   |\x1b\x5b\x31\x3b\x33\x37\x7e                 | 0x6D | 0x00 | 0x08
+Ctrl+Shift+F6            |\x1b\x5b\x31\x3b\x36\x37\x7e                 | 0x63 | 0x00 | 0x07
+Shift+F7                 |\x1b\x5b\x31\x3b\x32\x38\x7e                 | 0x5B | 0x00 | 0x03
+Ctrl+F7                  |\x1b\x5b\x31\x3b\x35\x38\x7e                 | 0x64 | 0x00 | 0x04
+Alt+F7                   |\x1b\x5b\x31\x3b\x33\x38\x7e                 | 0x6E | 0x00 | 0x08
+Ctrl+Shift+F7            |\x1b\x5b\x31\x3b\x36\x38\x7e                 | 0x64 | 0x00 | 0x07
+Shift+F8                 |\x1b\x5b\x31\x3b\x32\x39\x7e                 | 0x5C | 0x00 | 0x03
+Ctrl+F8                  |\x1b\x5b\x31\x3b\x35\x39\x7e                 | 0x65 | 0x00 | 0x04
+Alt+F8                   |\x1b\x5b\x31\x3b\x33\x39\x7e                 | 0x6F | 0x00 | 0x08
+Ctrl+Shift+F8            |\x1b\x5b\x31\x3b\x36\x39\x7e                 | 0x65 | 0x00 | 0x07
+Shift+F9                 |\x1b\x5b\x32\x30\x3b\x32\x7e                 | 0x5D | 0x00 | 0x03
+Ctrl+F9                  |\x1b\x5b\x32\x30\x3b\x35\x7e                 | 0x66 | 0x00 | 0x04
+Alt+F9                   |\x1b\x5b\x32\x30\x3b\x33\x7e                 | 0x70 | 0x00 | 0x08
+Ctrl+Shift+F9            |\x1b\x5b\x32\x30\x3b\x36\x7e                 | 0x66 | 0x00 | 0x07
+Shift+F10                |\x1b\x5b\x32\x31\x3b\x32\x7e                 | 0x5E | 0x00 | 0x03
+Ctrl+F10                 |\x1b\x5b\x32\x31\x3b\x35\x7e                 | 0x67 | 0x00 | 0x04
+Alt+F10                  |\x1b\x5b\x32\x31\x3b\x33\x7e                 | 0x71 | 0x00 | 0x08
+Ctrl+Shift+F10           |\x1b\x5b\x32\x31\x3b\x36\x7e                 | 0x67 | 0x00 | 0x07
+Shift+F11                |\x1b\x5b\x32\x33\x3b\x32\x7e                 | 0x83 | 0x00 | 0x03
+Ctrl+F11                 |\x1b\x5b\x32\x33\x3b\x35\x7e                 | 0x85 | 0x00 | 0x04
+Alt+F11                  |\x1b\x5b\x32\x33\x3b\x33\x7e                 | 0x87 | 0x00 | 0x08
+Ctrl+Shift+F11           |\x1b\x5b\x32\x33\x3b\x36\x7e                 | 0x85 | 0x00 | 0x07
+Shift+F12                |\x1b\x5b\x32\x34\x3b\x32\x7e                 | 0x84 | 0x00 | 0x03
+Ctrl+F12                 |\x1b\x5b\x32\x34\x3b\x35\x7e                 | 0x86 | 0x00 | 0
+//
+// --- Arrow Keys (Example using common xterm/vt sequences) ---
+// These are HIGHLY terminal dependent, user may need to map these
+//
+DownArrow                |\x1b\x5b\x42                                 | 0x50 | 0x00 | 0x00  // ESC [ B
+UpArrow                  |\x1b\x5b\x41                                 | 0x48 | 0x00 | 0x00  // ESC [ A
+LeftArrow                |\x1b\x5b\x44                                 | 0x4B | 0x00 | 0x00  // ESC [ D
+RightArrow               |\x1b\x5b\x43                                 | 0x4D | 0x00 | 0x00  // ESC [ C
+
+PageUp                  |\x1b\x5b\x35\x7e                             | 0x49 | 0x00 | 0x00  // ESC [ 5 ~
+PageDown                |\x1b\x5b\x36\x7e                             | 0x51 | 0x00 | 0x00  // ESC [ 6 ~
+
+Home                    |\x1b\x5b\x48                                 | 0x47 | 0x00 | 0x00  // ESC [ H
+End                     |\x1b\x5b\x46                                 | 0x4F | 0x00 | 0x00  // ESC [ F
+
+Insert                  |\x1b\x5b\x32\x7e                             | 0x52 | 0x00 | 0x00  // ESC [ 2 ~
+Delete                  |\x1b\x5b\x33\x7e                             | 0x53 | 0x00 | 0x00  // ESC [ 
+
+Shift+DownArrow          |\x1b\x5b\x42\x20\x35\x7e                     | 0x50 | 0x00 | 0x03  // ESC [ B 5 ~
+Shift+UpArrow            |\x1b\x5b\x41\x20\x35\x7e                     | 0x48 | 0x00 | 0x03  // ESC [ A 5 ~
+Shift+LeftArrow          |\x1b\x5b\x44\x20\x35\x7e                     | 0x4B | 0x00 | 0x03  // ESC [ D 5 ~  
+Shift+RightArrow         |\x1b\x5b\x43\x20\x35\x7e                     | 0x4D | 0x00 | 0x03  // ESC [ C 5 ~
+
+Shift+PageUp             |\x1b\x5b\x35\x7e                             | 0x49 | 0x00 | 0x03  // ESC [ 5 ~
+Shift+PageDown           |\x1b\x5b\x36\x7e                             | 0x51 | 0x00 | 0x03  // ESC [ 6 ~
+
+Shift+Home               |\x1b\x5b\x48\x20\x35\x7e                     | 0x47 | 0x00 | 0x03  // ESC [ H 5 ~
+Shift+End                |\x1b\x5b\x46\x20\x35\x7e                     | 0x4F | 0x00 | 0x03  // ESC [ F 5 ~
+
+Shift+Insert             |\x1b\x5b\x32\x7e                             | 0x52 | 0x00 | 0x03  // ESC [ 2 ~
+Shift+Delete             |\x1b\x5b\x33\x7e                             | 0x53 | 0x00 | 0x03  // ESC [ 3 ~
+
+Ctrl+DownArrow           |\x1b\x5b\x42\x20\x32\x7e                     | 0x50 | 0x00 | 0x04  // ESC [ B 2 ~
+Ctrl+UpArrow             |\x1b\x5b\x41\x20\x32\x7e                     | 0x48 | 0x00 | 0x04  // ESC [ A 2 ~
+Ctrl+LeftArrow           |\x1b\x5b\x44\x20\x32\x7e                     | 0x4B | 0x00 | 0x04  // ESC [ D 2 ~
+Ctrl+RightArrow          |\x1b\x5b\x43\x20\x32\x7e                     | 0x4D | 0x00 | 0x04  // ESC [ C 2 ~
+
+Ctrl+PageUp             |\x1b\x5b\x35\x7e                             | 0x49 | 0x00 | 0x04  // ESC [ 5 ~
+Ctrl+PageDown           |\x1b\x5b\x36\x7e                             | 0x51 | 0x00 | 0x04  // ESC [ 6 ~
+
+Ctrl+Home               |\x1b\x5b\x48\x20\x32\x7e                     | 0x47 | 0x00 | 0x04  // ESC [ H 2 ~
+Ctrl+End                |\x1b\x5b\x46\x20\x32\x7e                     | 0x4F | 0x00 | 0x04  // ESC [ F 2 ~
+
+Ctrl+Insert             |\x1b\x5b\x32\x7e                             | 0x52 | 0x00 | 0x04  // ESC [ 2 ~
+Ctrl+Delete             |\x1b\x5b\x33\x7e                             | 0x53 | 0x00 | 0x04  // ESC [ 3 ~
+
+Alt+DownArrow            |\x1b\x5b\x42\x20\x33\x7e                     | 0x50 | 0x00 | 0x08  // ESC [ B 3 ~
+Alt+UpArrow              |\x1b\x5b\x41\x20\x33\x7e                     | 0x48 | 0x00 | 0x08  // ESC [ A 3 ~
+Alt+LeftArrow            |\x1b\x5b\x44\x20\x33\x7e                     | 0x4B | 0x00 | 0x08  // ESC [ D 3 ~
+Alt+RightArrow           |\x1b\x5b\x43\x20\x33\x7e                     | 0x4D | 0x00 | 0x08  // ESC [ C 3 ~
+
+Alt+PageUp              |\x1b\x5b\x35\x7e                             | 0x49 | 0x00 | 0x08  // ESC [ 5 ~
+Alt+PageDown            |\x1b\x5b\x36\x7e                             | 0x51 | 0x00 | 0x08  // ESC [ 6 ~
+
+Alt+Home                |\x1b\x5b\x48\x20\x33\x7e                     | 0x47 | 0x00 | 0x08  // ESC [ H 3 ~  
+Alt+End                 |\x1b\x5b\x46\x20\x33\x7e                     | 0x4F | 0x00 | 0x08  // ESC [ F 3 ~
+
+Alt+Insert              |\x1b\x5b\x32\x7e                             | 0x52 | 0x00 | 0x08  // ESC [ 2 ~
+Alt+Delete              |\x1b\x5b\x33\x7e                             | 0x53 | 0x00 | 0x08  // ESC [ 3 ~
+
