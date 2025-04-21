@@ -31,7 +31,12 @@ VGADEMO_MAP=$(OUTDIR)/vga_demo.map
 # Library of functions used in more than one 16-bit build target.
 LIB16_LIB=$(TMPDIR)/lib16.a
 
-all:	dirs $(CLIENT_BIN) $(RMTDOS_BIN) $(VGADEMO_BIN) list
+TOOLS=tools
+KEYMAP_CONFIG_BIN=$(OUTDIR)/keymap_config
+KEYMAP_TEST_BIN=$(OUTDIR)/keymap_test
+
+
+all:	dirs $(CLIENT_BIN) $(RMTDOS_BIN) $(VGADEMO_BIN) $(KEYMAP_CONFIG_BIN) list
 
 clean:
 	@rm -rf $(OUTDIR) $(TMPDIR)
@@ -54,6 +59,12 @@ setcap: $(CLIENT_BIN)
 
 typos:
 	-(test -x ~/.cargo/bin/typos && ~/.cargo/bin/typos src/ README.md)
+
+$(KEYMAP_CONFIG_BIN): src/tools/keymap_config.c src/client/keymaplib.c src/client/keymaplib.h
+	@echo "Building keymap_config... $@  - $^"
+	$(CC) -std=c99 -Wall -Isrc -ggdb -o $@ $^ $(NCURSESW_FLAGS)
+	@echo "Copying keyboard maps to $(OUTDIR)..."
+	cp -v src/tools/*.kmap $(OUTDIR)
 
 # "client" runs on Linux in a terminal (ncurses).
 $(CLIENT_BIN): src/client/*.c
@@ -97,6 +108,7 @@ $(RMTDOS_ASM_OBJ):	src/server/*.s
 $(RMTDOS_BIN):	$(LIB16_LIB)  $(RMTDOS_C_OBJ) $(RMTDOS_ASM_OBJ)
 	$(LD86) -y -d -T100 -L$(LD86_LIBDIR) -0 -C0 -o $@ -ldos $^
 	$(LD86) -y -d -T100 -L$(LD86_LIBDIR) -0 -C0 -o $@ -ldos -M $^ > $(RMTDOS_MAP)
+
 
 bcclint:	src/common/*.h src/server/*.h src/server/*.c
 	$(CC) -Wall -Wno-format -Wno-pointer-to-int-cast \
