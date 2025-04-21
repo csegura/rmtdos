@@ -20,11 +20,14 @@ extern char g_cp437_table[CP437_CHARS][CP437_WIDTH];
 extern int g_ncurses_colors[VGA_ATTRS];
 
 // Custom color pairs for use in ncurses.
-#define MY_COLOR_HEADER 15 // (equiv to VGA attr 0x0f)
+#define MY_COLOR_HEADER 32 //15 // (equiv to VGA attr 0x0f)
+#define COLOR_CURSOR 15
+#define SESSION_WIN_SEPARATOR 249 //0x4f
 
 extern WINDOW *g_probe_window;
 extern WINDOW *g_debug_window;
 extern WINDOW *g_session_window;
+extern WINDOW *g_status_window;
 
 extern void cp437_table_init();
 
@@ -36,5 +39,7 @@ extern void update_session_window(struct RemoteHost *rh, uint16_t vga_offset,
 extern void init_ncurses();
 
 extern void shutdown_ncurses();
+
+extern void update_status_window(struct RemoteHost *rh);
 
 #endif // __RMTDOS_CLIENT_CURSES_H

@@ -1,6 +1,46 @@
 # rmtdos
 
-Remotely control DOS-based systems from Linux
+Remotely control DOS-based systems from Linux (an original project by __Dennis Jenkins__) 
+[Original RMTDOS](https://github.com/dennisjenkins75/rmtdos)
+
+## This Fork
+
+This is a fork of the original project, where I have added some features but I think that have not
+been tested enough. Use a your own risk.
+
+In the releases you can find a precompiled version. Ready to use. 🤪
+
+## Unmature Features
+
+I have added a new feature to the client, which allows you to customize a keymap for the keys
+that are sent to the DOS system. This is useful for those who want to use a different keyboard layout
+than the default one. The keymap is defined in a file called `*.kmap`, which should be placed in the
+same directory as the client executable.
+
+Since the keymap is a simple text file, you can edit it with any text editor, and add any other sequence
+of keys that you want to send to the DOS system. (for example spanish users can add an )
+
+By default, the client will look for a file called `xterm.kmap`, but you can specify a different, using the
+`-k` option. 
+
+Also there is a keymap editor in the tools directory, which allows you to edit the keymap file
+easily. The editor is a simple text-based interface that allows you to map keys to different
+characters. 
+
+![keymap editor](./images/keymap_config2.png)
+
+Also I added a `-B` option to the client, which allows to force the client to use the 8color palette
+
+If you see this 
+
+![256color palette](./images/screen256color.png)
+
+Use the `-B` option to force the 8color palette
+
+![8color palette](./images/screen8color.png)
+
+
+# Original Readme - Dennis Jenkins
 
 Tested on FreeDOS-1.3 in QEMU and on a real Pentium-MMX 166 MHz.
 

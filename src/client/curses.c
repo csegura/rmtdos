@@ -12,6 +12,7 @@
 
 #include "client/curses.h"
 #include "client/util.h"
+#include "globals.h"
 
 char g_cp437_table[CP437_CHARS][CP437_WIDTH];
 
@@ -70,7 +71,7 @@ static uint8_t color_bit_swap[8] = {
     COLOR_RED,   COLOR_MAGENTA, COLOR_YELLOW, COLOR_WHITE,
 };
 
-void color_table_init() {
+void color_table_init(int basic_colors) {
   const char *term = getenv("TERM") ? getenv("TERM") : "<empty>";
 
   if (!has_colors()) {
@@ -96,7 +97,7 @@ void color_table_init() {
     }
   }
 
-  if ((COLORS >= 256) && (COLOR_PAIRS >= 65536)) {
+  if ((COLORS >= 256) && (COLOR_PAIRS >= 65536) && !basic_colors) {
     // Create a 1:1 mapping from VGA attr to ncurses COLOR_PAIR.
     // Manually tested with 'TERM=xterm-256color' on Gentoo Linux with
     // `x11-terms/xterm-375` on a true-color visual.  Bugs:
@@ -108,7 +109,7 @@ void color_table_init() {
       init_pair(index, fg, bg);
       g_ncurses_colors[index] = index;
     }
-  } else if ((COLORS == 8) && (COLOR_PAIRS >= 64)) {
+  } else if (((COLORS == 8) && (COLOR_PAIRS >= 64)) || basic_colors) {
     // TODO: This produces incorrect results in "TERM=xterm".
     // Any "(attr & 0xe0)" has the wrong FG and BG brightness.
     //
@@ -133,29 +134,19 @@ void color_table_init() {
   }
 }
 
-void update_hud(struct RemoteHost *rh) {
-  if (OK != wmove(rh->window, rh->text_rows, 0)) {
+void debug_remote_host(struct RemoteHost *rh) {
+  if (OK != wmove(g_debug_window, 0, 0)) {
     return;
   }
 
-  int y = rh->text_rows + 1;
+  int y = 0;
+  wclrtobot(g_debug_window);
+  box(g_debug_window, 0, 0);
 
-  char mac_addr[MAC_ADDR_FMT_LEN];
-  fmt_mac_addr(mac_addr, sizeof(mac_addr), rh->if_addr);
-
-  // Compute time delta to last received packet.
-  struct timeval tv_now, tv_stale;
-  gettimeofday(&tv_now, NULL);
-  timersub(&tv_now, &(rh->tv_last_resp), &tv_stale);
-
-  char stale[32];
-  snprintf(stale, sizeof(stale), "%ld.%06ld", tv_stale.tv_sec,
-           tv_stale.tv_usec);
-
-  mvwprintw(rh->window, ++y, 0, "addr: %s, rows: %d, cols:%d, latency:%s",
-            mac_addr, rh->text_rows, rh->text_cols, stale);
-
-  mvwprintw(rh->window, ++y, 0, "<ALT-ESC> to Exit");
+  mvwprintw(g_debug_window, y++, 1, "Remote Host Debug");
+  mvwprintw(g_debug_window, y++, 1, "addr: %s", rh->if_addr);
+  mvwprintw(g_debug_window, y++, 1, "rows: %d", rh->text_rows);
+  mvwprintw(g_debug_window, y++, 1, "cols: %d", rh->text_cols);
 }
 
 void update_session_window(struct RemoteHost *rh, uint16_t video_offset,
@@ -187,42 +178,79 @@ void update_session_window(struct RemoteHost *rh, uint16_t video_offset,
     }
   }
 
+  debug_remote_host(rh);
+
   // If our ncurses window is larger than the remote screen resolution,
   // then clear the area that is outside of the remote end's screen resolution.
   // Then display connection stats below it.
   if (OK == wmove(g_session_window, rh->text_rows, 0)) {
+    // fprintf(stderr, " - Clearing %d rows\n", rh->text_rows);
     int y = rh->text_rows;
-    wclrtobot(g_session_window);
+    // wclrtobot(g_session_window);
 
-    wattron(g_session_window, COLOR_PAIR(g_ncurses_colors[0x4f]));
-    for (int x = 0; x < rh->text_cols; ++x) {
-      mvwaddstr(g_session_window, y, x, g_cp437_table[0xcd]);
-    }
-    wattroff(g_session_window, COLOR_PAIR(g_ncurses_colors[0x4f]));
+    wattron(g_session_window,
+            COLOR_PAIR(g_ncurses_colors[SESSION_WIN_SEPARATOR]));
+    mvwprintw(g_session_window, y, 0, "%*c", rh->text_cols, ' ');
+    wattroff(g_session_window,
+             COLOR_PAIR(g_ncurses_colors[SESSION_WIN_SEPARATOR]));
   }
 
   // show a "cursor" at your current position
-  if (OK == wmove(g_session_window, rh->status.cursor_row, rh->status.cursor_col)) {
-    wattron(g_session_window, COLOR_PAIR(MY_COLOR_HEADER));
+  if (OK ==
+      wmove(g_session_window, rh->status.cursor_row, rh->status.cursor_col)) {
+    wattron(g_session_window, COLOR_PAIR(COLOR_CURSOR));
     waddch(g_session_window, ' ' | A_REVERSE);
-    wattroff(g_session_window, COLOR_PAIR(MY_COLOR_HEADER));
+    wattroff(g_session_window, COLOR_PAIR(COLOR_CURSOR));
   }
 }
 
-void init_ncurses() {
+void update_status_window(struct RemoteHost *rh) {
+  if (OK != wmove(rh->window, rh->text_rows, 0)) {
+    return;
+  }
+
+  int y = rh->text_rows;
+ 
+  mvwprintw(rh->window, ++y, 0,
+            "<Ctrl>+ <F12> Exit <F11> RLoad Key <F10> Debug <F9> Status");
+  
+  
+
+  if (g_show_status) {
+    char mac_addr[MAC_ADDR_FMT_LEN];
+    fmt_mac_addr(mac_addr, sizeof(mac_addr), rh->if_addr);
+
+    // Compute time delta to last received packet.
+    struct timeval tv_now, tv_stale;
+    gettimeofday(&tv_now, NULL);
+    timersub(&tv_now, &(rh->tv_last_resp), &tv_stale);
+
+    char stale[32];
+    snprintf(stale, sizeof(stale), "%ld.%06ld", tv_stale.tv_sec,
+             tv_stale.tv_usec);
+
+    mvwprintw(rh->window, ++y, 0, "addr: %s, (%dx%d), %d:%d latency:%s",
+              mac_addr, rh->text_rows, rh->text_cols, rh->status.cursor_row,
+              rh->status.cursor_col, stale);
+  } else {
+      wclrtobot(rh->window);          
+  }
+}
+
+void init_ncurses(int basic_colors) {
   initscr();
   nonl();
   raw();
   noecho();
   curs_set(0);
   timeout(0);
-  color_table_init();
+  color_table_init(basic_colors);
 
-  g_probe_window = newwin(18, 70, 2, 5);
-  g_debug_window = newwin(5, 80, 20, 0);
   g_session_window = newwin(0, 0, 0, 0);
+  g_probe_window = newwin(18, 70, 2, 5);
+  g_debug_window = newwin(5, 80, 50, 0);
 
-  keypad(g_session_window, TRUE);
+  // keypad(g_session_window, TRUE);
   meta(g_session_window, TRUE);
   nodelay(g_session_window, TRUE);
   nonl();

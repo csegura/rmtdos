@@ -10,6 +10,7 @@
 
 extern int g_running;
 extern int g_show_debug_window;
+extern int g_show_status;
 
 // Non-NULL if we're actively controlling a server.
 extern struct RemoteHost *g_active_host;
