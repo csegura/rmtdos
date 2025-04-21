@@ -174,9 +174,13 @@ int main(int argc, char *argv[]) {
   regs.w.bx = MULTIPLEX_MAGIC_BX;
   regs.w.dx = MULTIPLEX_CMD_INSTALL_CHECK;
 
+  printf("int 2fh.  AX:%04x BX:%04x DX:%04x\n", regs.w.ax, regs.w.bx,
+         regs.w.dx);
+
   x86_call(0x2f, &regs);
   installed = !regs.w.bx;
   safe_to_remove = !regs.w.ax;
+  printf("installed: %d, safe_to_remove: %d\n", installed, safe_to_remove);
 
   if (unload) {
     if (!installed) {
@@ -200,11 +204,14 @@ int main(int argc, char *argv[]) {
     return EXIT_SUCCESS;
   }
 
+  printf("Initializing...\n");
+
   // We must be loading and will "go TSR".
   buffer_init(buffers);
   protocol_init();
   session_mgr_init();
 
+  printf("Initializing Packet Driver...\n");
   r = pktdrv_init(irq);
   if (r) {
     printf("Packet Driver init failed, aborting.  Error %d\n", r);

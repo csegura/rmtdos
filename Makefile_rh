@@ -1,0 +1,161 @@
+#  SPDX-FileCopyrightText: 2022 Dennis Jenkins <dennis.jenkins.75@gmail.com>
+#  SPDX-License-Identifier: GPL-2.0-or-later
+
+# Using "dev86" (https://github.com/lkundrak/dev86)
+AR=ar
+AS86=as86
+BCC=bcc
+LD86=ld86
+
+# Where to place the final deliverables.
+OUTDIR=out
+
+# Where to place intermediate compilation products.
+TMPDIR=tmp
+
+# TODO: Why is this needed?  Why is "ld86" unable to find "crt0.o" on its own?
+LD86_LIBDIR=/usr/lib/bcc
+
+# The "client" runs on Linux.
+CLIENT_BIN=$(OUTDIR)/rmtdos-client
+NCURSESW_FLAGS += $(shell pkg-config ncursesw --cflags --libs)
+
+# "rmtdos.com" runs on DOS.
+RMTDOS_BIN=$(OUTDIR)/rmtdos.com
+RMTDOS_DEBUG_BIN=$(OUTDIR)/rmtdosd.com
+RMTDOS_MAP=$(OUTDIR)/rmtdos.map
+TEST_BIN=$(OUTDIR)/test.com
+
+# DOS Program to run VGA text mode tests.
+VGADEMO_BIN=$(OUTDIR)/vga_demo.com
+VGADEMO_MAP=$(OUTDIR)/vga_demo.map
+
+# Library of functions used in more than one 16-bit build target.
+LIB16_LIB=$(TMPDIR)/lib16.a
+
+all:	dirs $(CLIENT_BIN) $(RMTDOS_BIN) $(RMTDOS_DEBUG_BIN) $(VGADEMO_BIN) $(TEST_BIN) list
+
+clean:
+	@rm -rf $(OUTDIR) $(TMPDIR)
+	@find ./src -type f -name "*.o" | xargs rm -f
+	@find ./src -type f -name "*.d.o" | xargs rm -f
+dirs:
+	@mkdir -p $(OUTDIR) $(TMPDIR)
+
+list:
+	ls -l $(OUTDIR)
+
+format:
+	@clang-format -i $$(find . -name "*.[ch]" | sort)
+	-(test -x ~/.local/bin/mdformat && ~/.local/bin/mdformat README.md)
+
+# Requires root privs to run.
+# https://stackoverflow.com/a/46466642
+setcap: $(CLIENT_BIN)
+	setcap cap_net_raw,cap_net_admin=eip $(CLIENT_BIN)
+
+typos:
+	-(test -x ~/.cargo/bin/typos && ~/.cargo/bin/typos src/ README.md)
+
+# "client" runs on Linux in a terminal (ncurses).
+$(CLIENT_BIN): src/client/*.c
+	$(CC) -std=c99 -Wall -Isrc -ggdb -o $@ $^ $(NCURSESW_FLAGS)
+
+# "lib16.a"
+LIB16_C_SRC:=	$(sort $(basename $(wildcard src/lib16/*.c)))
+LIB16_C_OBJ:=	$(LIB16_C_SRC:=.o)
+
+$(LIB16_C_OBJ):		src/lib16/*.c src/lib16/*.h
+	$(BCC) -O -Isrc -ansi -0 -Md -c -o $@ $(*:=.c)
+
+LIB16_ASM_SRC:=	$(sort $(basename $(wildcard src/lib16/*.s)))
+LIB16_ASM_OBJ:=$(LIB16_ASM_SRC:=.o)
+
+$(LIB16_ASM_OBJ):	src/lib16/*.s
+	$(AS86) -0 -o $@ $(*:=.s)
+
+$(LIB16_LIB):	$(LIB16_ASM_OBJ) $(LIB16_C_OBJ)
+	rm -f $@
+	$(AR) -r $@ $^
+
+TEST_SRC:=	$(sort $(basename $(wildcard src/test/*.c)))
+TEST_OBJ:=	$(TEST_SRC:=.o)
+TEST_MAP:=	$(OUTDIR)/test.map
+
+$(TEST_OBJ):	src/test/*.c 
+	$(BCC) -O -Isrc -ansi -0 -Md -c -o $@ $(*:=.c)
+
+$(TEST_BIN):	$(LIB16_LIB) $(TEST_OBJ)
+	$(LD86) -y -d -T100 -L$(LD86_LIBDIR) -0 -C0 -o $@ -ldos $^
+	$(LD86) -y -d -T100 -L$(LD86_LIBDIR) -0 -C0 -o $@ -ldos -M $^ > $(TEST_MAP)
+
+# "server.com" runs on DOS in real-mode.
+
+RMTDOS_C_SRC:=	$(sort $(basename $(wildcard src/server/*.c)))
+RMTDOS_C_OBJ:=	$(RMTDOS_C_SRC:=.o)
+RMTDOS_C_DBGOBJ:=	$(RMTDOS_C_SRC:=.d.o)
+
+$(RMTDOS_C_OBJ):	src/server/*.c src/server/*.h src/common/*.h
+	$(BCC) -O -Isrc -ansi -0 -Md -c -o $@ $(*:=.c)
+
+$(RMTDOS_C_DBGOBJ):	src/server/*.c src/server/*.h src/common/*.h
+	$(BCC) -O -Isrc -ansi -0 -Md -DDEBUG -c -o $@ $(addsuffix .c,$(basename $(basename $@)))
+
+RMTDOS_ASM_SRC:=	$(sort $(basename $(wildcard src/server/*.s)))
+RMTDOS_ASM_OBJ:=	$(RMTDOS_ASM_SRC:=.o)
+
+$(RMTDOS_ASM_OBJ):	src/server/*.s
+	$(AS86) -0 -o $@ $(*:=.s)
+
+$(RMTDOS_BIN):	$(LIB16_LIB)  $(RMTDOS_C_OBJ) $(RMTDOS_ASM_OBJ)
+	$(LD86) -y -d -T100 -L$(LD86_LIBDIR) -0 -C0 -o $@ -ldos $^
+	$(LD86) -y -d -T100 -L$(LD86_LIBDIR) -0 -C0 -o $@ -ldos -M $^ > $(RMTDOS_MAP)
+
+$(RMTDOS_DEBUG_BIN):	$(LIB16_LIB) $(RMTDOS_C_DBGOBJ) $(RMTDOS_ASM_OBJ)
+	$(LD86) -y -d -T100 -L$(LD86_LIBDIR) -0 -C0 -o $@ -ldos $^	
+
+bcclint:	src/common/*.h src/server/*.h src/server/*.c
+	$(CC) -Wall -Wno-format -Wno-pointer-to-int-cast \
+              -Wno-int-conversion -Wno-int-to-pointer-cast \
+              -Isrc -m16 -o /dev/null $^
+
+# "vga_demo.com"
+$(VGADEMO_BIN):	$(LIB16_LIB) src/vga_demo/*.c
+	$(BCC) -O -Isrc -ansi -0 -Md -o $@ $^
+	$(BCC) -O -Isrc -ansi -0 -Md -o $@ -M $^ > $(VGADEMO_MAP)
+
+COPYDIR=~/prj/vintage/share
+copy:
+	@echo "Copying files to $(COPYDIR)..."
+	@cp -fv $(CLIENT_BIN) $(COPYDIR)
+	@cp -fv $(RMTDOS_BIN) $(COPYDIR)
+	@cp -fv $(RMTDOS_DEBUG_BIN) $(COPYDIR)
+	@cp -fv $(VGADEMO_BIN) $(COPYDIR)
+	@cp -fv $(RMTDOS_MAP) $(COPYDIR)
+	@cp -fv $(VGADEMO_MAP) $(COPYDIR)
+	@cp -fv $(TEST_MAP) $(COPYDIR)
+	@cp -fv $(TEST_BIN) $(COPYDIR)
+	scp $(CLIENT_BIN) romheat@192.168.99.20:/home/romheat/
+
+debug:
+	@echo "Debugging vars.."
+	@echo "CLIENT_BIN: $(CLIENT_BIN)"
+	@echo "RMTDOS_BIN: $(RMTDOS_BIN)"
+	@echo "RMTDOS_MAP: $(RMTDOS_MAP)"
+	@echo "VGADEMO_BIN: $(VGADEMO_BIN)"
+	@echo "VGADEMO_MAP: $(VGADEMO_MAP)"
+	@echo "LIB16_LIB: $(LIB16_LIB)"
+	@echo "RMTDOS_C_OBJ: $(RMTDOS_C_OBJ)"
+	@echo "RMTDOS_ASM_OBJ: $(RMTDOS_ASM_OBJ)"
+	@echo "RMTDOS_C_SRC: $(RMTDOS_C_SRC)"
+	@echo "RMTDOS_ASM_SRC: $(RMTDOS_ASM_SRC)"
+	@echo "RMTDOS_C_OBJ: $(RMTDOS_C_OBJ)"
+	@echo "RMTDOS_ASM_OBJ: $(RMTDOS_ASM_OBJ)"
+	@echo "RMTDOS_C_SRC: $(RMTDOS_C_SRC)"
+	@echo "RMTDOS_ASM_SRC: $(RMTDOS_ASM_SRC)"
+	@echo "LIB16_C_OBJ: $(LIB16_C_OBJ)"
+	@echo "LIB16_ASM_OBJ: $(LIB16_ASM_OBJ)"
+	@echo "LIB16_C_SRC: $(LIB16_C_SRC)"
+	@echo "LIB16_ASM_SRC: $(LIB16_ASM_SRC)"
+	
+	
