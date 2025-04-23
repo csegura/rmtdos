@@ -1,4 +1,5 @@
 /*
+ * Copyright 2022 Dennis Jenkins <dennis.jenkins.75@gmail.com>
  * Copyright 2025 <romheat@gmail.com>
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
@@ -56,20 +57,8 @@ struct VideoState {
 // Read the current video state into the provided struct.
 extern void video_read_state(struct VideoState *state);
 
-
-// extern void video_disable_blink();
-
 // Checksum the video frame buffer.
 // This is used to detect changes in the video memory.
 extern uint16_t video_checksum_frame_buffer(uint16_t offset, uint16_t words);
-
-extern uint16_t video_copy_from_frame_buffer_and_checksum(void *dest,
-                                                          uint16_t offset,
-                                                          uint16_t words);    
-
-// enable blink
-extern void video_enable_blink();
-// disable blink
-extern void video_disable_blink();
 
 #endif // __RMTDOS_LIB16_VIDEO_H

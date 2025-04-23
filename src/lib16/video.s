@@ -1,3 +1,4 @@
+;  SPDX-FileCopyrightText: 2022 Dennis Jenkins <dennis.jenkins.75@gmail.com>
 ;  SPDX-FileCopyrightText: 2025 r0mheat <romheat@gmail.com>
 ;  SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -20,20 +21,20 @@ _video_get_segment:
   push     bp
   mov      bp, sp
 
-  mov      ax, #$0040           ; BIOS data area
+  mov      ax, #$0040               ; BIOS data area
   mov      es, ax
 
   seg      es
-  mov      al, [$10]            ; Active display mode
-  and      al, #$30             ; Check bits 4-5 for adapter type
-  cmp      al, #$30             ; MDA mode?
+  mov      al, [$10]                ; Active display mode
+  and      al, #$30                 ; Check bits 4-5 for adapter type
+  cmp      al, #$30                 ; MDA mode?
   jne      not_mda
 
-  mov      ax, #$b000           ; Return MDA segment
+  mov      ax, #$b000               ; Return MDA segment
   jmp      vgs_done
 
 not_mda:
-  mov      ax, #$b800           ; Return VGA/CGA segment
+  mov      ax, #$b800               ; Return VGA/CGA segment
 
 vgs_done:
   pop      bp
@@ -46,8 +47,8 @@ vgs_done:
 _video_init:
     push    bp
     mov     bp, sp
-    call    _video_get_segment   ; Detect segment (result in AX)
-    mov     [_video_address], ax ; Store it globally
+    call    _video_get_segment      ; Detect segment (result in AX)
+    mov     [_video_address], ax    ; Store it globally
     pop     bp
     ret
 
@@ -58,56 +59,56 @@ _video_init:
 _video_write_str:
   push     bp
   mov      bp, sp
-  push     es                     ; Save ES
+  push     es                       ; Save ES
 
   ;  Get video segment from global variable 
   mov      ax, [_video_address]
-  mov      es, ax                 ; ES = Video Segment
+  mov      es, ax                   ; ES = Video Segment
 
   ;  Calculate screen offset 
-  push     ds                     ; Need DS temporarily for BIOS data
-  mov      ax, #$0040             ; BIOS data area
-  mov      ds, ax
-  mov      bx, [$4a]              ; Number of screen columns (width)
-  pop      ds                     ; Restore original DS
+  push     ds                       ; Need DS temporarily for BIOS data
+  mov      ax, #$0040               ; BIOS data area
+  mov      ds, ax   
+  mov      bx, [$4a]                ; Number of screen columns (width)
+  pop      ds                       ; Restore original DS
 
-  mov      ax, [bp + 6]           ; AX = y  (Stack: [bp+2]=ret, [bp+4]=x, [bp+6]=y, [bp+8]=attr, [bp+10]=str)
-  mul      bl                     ; AX = y * width
-  mov      bx, [bp + 4]           ; BX = x
-  add      ax, bx                 ; AX = (y * width) + x
-  add      ax, ax                 ; AX = 2 * ((y * width) + x) ; byte offset
-  mov      di, ax                 ; ES:DI points into text buffer start
+  mov      ax, [bp + 6]             ; AX = y  (Stack: [bp+2]=ret, [bp+4]=x, [bp+6]=y, [bp+8]=attr, [bp+10]=str)
+  mul      bl                       ; AX = y * width
+  mov      bx, [bp + 4]             ; BX = x
+  add      ax, bx                   ; AX = (y * width) + x
+  add      ax, ax                   ; AX = 2 * ((y * width) + x) ; byte offset
+  mov      di, ax                   ; ES:DI points into text buffer start
 
   ; Handle page offset if needed (for VGA only)
   cmp      word ptr [_video_address], #$b800
-  jne      skip_page_offset       ; Skip for MDA
+  jne      skip_page_offset         ; Skip for MDA
 
-  push     ds                     ; Need DS again for BIOS data
+  push     ds                       ; Need DS again for BIOS data
   mov      ax, #$0040
   mov      ds, ax
-  mov      cx, [$4e]              ; Offset of current video page (word offset)
-  pop      ds                     ; Restore original DS
-  add      di, cx                 ; Adjust DI for alternate video pages (byte offset)
+  mov      cx, [$4e]                ; Offset of current video page (word offset)
+  pop      ds                       ; Restore original DS
+  add      di, cx                   ; Adjust DI for alternate video pages (byte offset)
 
 skip_page_offset:
   ;  Write the string 
-  mov      ah, [bp + 8]           ; AH = attr
-  mov      si, [bp + 10]          ; DS:SI = str (Assume near pointer)
+  mov      ah, [bp + 8]             ; AH = attr
+  mov      si, [bp + 10]            ; DS:SI = str (Assume near pointer)
 
 video_write_str_loop:
-  lodsb                           ; AL = [DS:SI], SI++ (Get char)
+  lodsb                             ; AL = [DS:SI], SI++ (Get char)
   or       al, al
   jz       video_write_str_done
 
   seg      es
-  stosw                           ; Store AX (attr, char) to [ES:DI], DI += 2
+  stosw                             ; Store AX (attr, char) to [ES:DI], DI += 2
 
   jmp      video_write_str_loop
 
 video_write_str_done:
-  pop      es                     ; Restore original ES
+  pop      es                       ; Restore original ES
   pop      bp
-  ret                             ; Return (8 bytes of params popped by caller if cdecl)
+  ret                               ; Return (8 bytes of params popped by caller if cdecl)
 
 
 ; void video_gotoxy(int x, int y);
@@ -122,13 +123,13 @@ _video_gotoxy:
   mov      dh, al
 #else
   mov      bx, sp
-  mov      ax, [bx+4]                  ; y
+  mov      ax, [bx+4]               ; y
   mov      dh, al
-  mov      ax, [bx+2]                  ; x
+  mov      ax, [bx+2]               ; x
   mov      dl, al
 #endif
-  mov      ah, #$02                    ; Set cursor position BIOS call
-  mov      bh, #0                      ; Assume page 0 (can be read from VgaState if needed)
+  mov      ah, #$02                 ; Set cursor position BIOS call
+  mov      bh, #0                   ; Assume page 0 (can be read from VgaState if needed)
   int      $10
   ret
 
@@ -151,39 +152,39 @@ _video_read_state:
   mov     bp, sp
   push    es
   push    di
-  mov     di, [bp + 4]                 ; di = state
+  mov     di, [bp + 4]              ; di = state
 
   ; Get current video mode.
-  mov     ah, #$0f                     ; "get video mode"
+  mov     ah, #$0f                  ; "get video mode"
   int     $10
-  mov     [di], al                     ; state->video_mode
-  mov     [di + 1], bh                 ; state->active_page
-  mov     [di + 2], #25                ; state->text_rows (assume 25 for now)
-  mov     [di + 3], ah                 ; state->text_cols
+  mov     [di], al                  ; state->video_mode
+  mov     [di + 1], bh              ; state->active_page
+  mov     [di + 2], #25             ; state->text_rows (assume 25 for now)
+  mov     [di + 3], ah              ; state->text_cols
 
   ; Get cursor info.
-  mov     ah, #$03                     ; "get cursor info"
-                                       ; BH = page number (already set)
+  mov     ah, #$03                  ; "get cursor info"
+                                    ; BH = page number (already set)
   int     $10
-  mov     [di + 4], dh                 ; state->cursor_row
-  mov     [di + 5], dl                 ; state->cursor_col
+  mov     [di + 4], dh              ; state->cursor_row
+  mov     [di + 5], dl              ; state->cursor_col
 
   ; Determine if we have an EGA or VGA video card.
   ; http://www.ctyme.com/intr/rb-0219.htm
-  mov     ax, #$1a00                   ; Canonical VGA adapter check
+  mov     ax, #$1a00                ; Canonical VGA adapter check
   int     $10
   cmp     al, #$1a
-  jne     video_rs_no_vga        ; No VGA, check for EGA
+  jne     video_rs_no_vga           ; No VGA, check for EGA
   cmp     bl, #6
-  jb      video_rs_no_vga        ; No VGA, check for EGA
+  jb      video_rs_no_vga           ; No VGA, check for EGA
 
 video_rs_ega_vga:
-  mov     ax, #$0040                   ; BIOS data area.
+  mov     ax, #$0040                ; BIOS data area.
   mov     es, ax
   seg     es
-  mov     al, [$84]                    ; Screen rows (minus one).
+  mov     al, [$84]                 ; Screen rows (minus one).
   inc     al
-  mov     [di + 2], al                 ; state->text_rows
+  mov     [di + 2], al              ; state->text_rows
   jmp     video_rs_done
 
 video_rs_no_vga:
@@ -192,7 +193,7 @@ video_rs_no_vga:
   mov     bx, #$0010
   int     $10
   cmp     bl, #$10
-  jne     video_rs_ega_vga     ; EGA detected
+  jne     video_rs_ega_vga          ; EGA detected
 
 video_rs_done:
   pop     es
@@ -295,7 +296,6 @@ _video_copy_from_frame_buffer:
 ;  uint16_t offset,      Offset from frame buffer start
 ;  uint16_t words        Number of words to checksum
 ; );
-
 ; Calculate screen checksum 
 
 .text
@@ -312,7 +312,6 @@ _video_checksum_frame_buffer:
   ; [bp + 2] = return address
   ; [bp + 4] = offset
   ; [bp + 6] = words
-
   
   mov      ax, [_video_address] 
   mov      ds, ax
@@ -338,202 +337,3 @@ checksum_loop:
   pop      ds
   pop      bp
   ret                 
-
-; uint16_t video_copy_from_frame_buffer_and_checksum(
-;  void *dest,        // Destination buffer (near pointer in DS)
-;  uint16_t offset,   // Source offset in video segment
-;  uint16_t words     // Number of words to copy and checksum
-; );
-; Mix of copy and checksum.
-.text
-.global _video_copy_from_frame_buffer_and_checksum
-_video_copy_from_frame_buffer_and_checksum:
-  push     bp
-  mov      bp, sp
-  push     ds           
-  push     es           
-  push     si           
-  push     di           
-  push     cx           
-  push     dx           
-
-  ; [bp + 4] = dest (destination offset, near pointer relative to caller's DS)
-  ; [bp + 6] = offset (source offset within video segment)
-  ; [bp + 8] = words
-
-  mov      ax, ds       
-  mov      es, ax       
-  mov      di, [bp + 4]             ; dest into di                      
-  mov      ax, [_video_address]     
-  mov      ds, ax       
-  mov      si, [bp + 6]             ; offset into si
-
-  cld                               ; flog forward
-  mov      cx, [bp + 8]             ; word count
-  xor      dx, dx                   ; init = 0
-  jcxz     copy_checksum_done 
-
-copy_checksum_loop:
-  lodsw
-
-  xchg     bh, bl                   ; swap bytes for checksum
-  add      dx, bx                   ; add
-  rol      dx, #1                   ; rotate checksum left by 1 bit 
-  add      si, #2                   ; sum
-
-  stosw
-  loop     copy_checksum_loop
-
-copy_checksum_done:
-  mov      ax, dx                   ; return checksum
-  
-  pop      dx
-  pop      cx
-  pop      di
-  pop      si
-  pop      es
-  pop      ds         
-  pop      bp
-  ret                 
-
-;----------------------------------------------------------------------------
-; void enable_cursor(uint8_t cursor_start, uint8_t cursor_end);
-;----------------------------------------------------------------------------
-; Sets the cursor shape (start/end scanlines) and ensures cursor is visible.
-; Works for both MDA (ports 03B4/B5) and CGA/EGA/VGA (ports 03D4/D5)
-; by checking _video_address.
-; Parameters (pushed right-to-left by C caller):
-;   [bp+6] = cursor_end (8-bit value, 0-15 typical)
-;   [bp+4] = cursor_start (8-bit value, 0-15 typical)
-; Assumes Real Mode execution.
-
-.global _video_enable_blink
-_video_enable_blink:
-    push    bp                      ; Set up stack frame
-    mov     bp, sp
-
-    push    ax                      ; Save registers used
-    push    bx
-    push    cx                      ; Use CX temporarily for port addresses
-    push    dx
-
-    ; Determine video adapter ports based on segment
-    mov     bx, [_video_address]
-    mov     cx, #$03D4              ; Default to Color CRTC Index Port
-    cmp     bx, #$B000
-    jne     veb_color             ; If not MDA, ports are already correct
-
-    ; MDA Path (Set Cursor Start/End Scan Lines - Robust RMW)
-    mov     dx, 0x3B4
-    mov     al, 0x0A
-    out     dx, al
-    inc     dx
-    mov     al, 0x06              ; Start at scanline 6 (typical)
-    out     dx, al
-    jmp     veb_done
-
-veb_color:
-    ; CX now holds the correct Index Port (03B4h or 03D4h)
-    ; CX+1 will be the Data Port
-
-    ; Set Cursor Start Scan Line (CRTC Register 0Ah)
-    mov     dx, #$03D4              ; DX = Index Port
-    mov     al, #$0A                ; Index for Cursor Start Register
-    out     dx, al
-
-    inc     dx                      ; DX = Data Port (Index + 1)
-    in      al, dx                  ; Read current value of Register 0Ah
-
-    ; Preserve adapter-specific bits (optional but good practice)
-    ; For Color, mask is C0h (11000000b), Bits 6,7
-    ; For MDA, mask could also be C0h (or FFh if we don't care)
-    ; Let's use C0h for both for simplicity here.
-    and     al, #$C0                ; Preserve bits 6, 7
-
-    mov     bl, [bp+4]              ; Get cursor_start parameter from stack
-    or      al, bl                  ; Combine preserved bits with new start scanline
-
-    ; Ensure cursor is VISIBLE (Clear bit 5)
-    and     al, #$DF                ; Mask 11011111b (~0x20) - Clear disable bit
-
-    ; DX still points to Data Port
-    out     dx, al                  ; Write modified value back to Register 0Ah
-
-    ; Set Cursor End Scan Line (CRTC Register 0Bh)
-    dec     dx                      ; DX = Index Port
-    mov     al, #$0B                ; Index for Cursor End Register
-    out     dx, al
-
-    inc     dx                      ; DX = Data Port
-    in      al, dx                  ; Read current value of Register 0Bh
-
-    ; Preserve adapter-specific bits (optional but good practice)
-    ; For Color, mask is E0h (11100000b), Bits 5,6,7 (includes skew)
-    ; For MDA, mask could also be E0h (or C0h if ignoring skew)
-    ; Let's use E0h for both for simplicity here.
-
-    and     al, #$E0                ; Preserve bits 5, 6, 7
-
-    mov     bl, [bp+6]              ; Get cursor_end parameter from stack
-    or      al, bl                  ; Combine preserved bits with new end scanline
-
-    ; DX still points to Data Port
-    out     dx, al                  ; Write modified value back to Register 0Bh
-veb_done:
-    pop     dx                     
-    pop     cx
-    pop     bx
-    pop     ax
-    pop     bp                      
-    ret                            
-
-;----------------------------------------------------------------------------
-; void disable_cursor();
-;----------------------------------------------------------------------------
-; Disables (hides) the cursor.
-; Works for both MDA (ports 03B4/B5) and CGA/EGA/VGA (ports 03D4/D5)
-; by checking _video_address.
-; Uses direct write for Color path (matches C code).
-
-.global _video_disable_blink
-_video_disable_blink:
-    push    ax                      ; Save registers used
-    push    bx
-    push    cx                      ; Use CX temporarily for port addresses
-    push    dx
-
-    ; Determine video adapter ports based on segment
-    mov     bx, [_video_address]
-    mov     cx, #$03D4              ; Default to Color CRTC Index Port
-    cmp     bx, #$B000
-    jne     disable_color_path      ; If not MDA, jump to color logic
-
-; MDA Path (Disable Cursor - Robust RMW) 
-disable_mda_path:
-    mov     dx, #$03B4              ; MDA CRTC Index Register
-    mov     al, #$0A                ; Index: Cursor Start Register
-    out     dx, al
-
-    inc     dx                      ; DX = MDA CRTC Data Register (03B5h)
-    in      al, dx                  ; Read current Cursor Start value
-    or      al, #$20                ; Set bit 5 (Disable cursor)
-    out     dx, al                  ; Write modified value back to Register 0Ah
-
-    jmp     disable_done            ; Go to exit
-
-; Color Path (Disable Cursor - Direct Write 0x20)
-disable_color_path:
-    mov     dx, #$03D4              ; Color CRTC Index Register
-    mov     al, #$0A                ; Index for Cursor Start Register
-    out     dx, al
-
-    inc     dx                      ; DX = Color CRTC Data Register (03D5h)
-    mov     al, #$20                ; Value 0010 0000b: Sets bit 5 (disable), clears scanline bits
-    out     dx, al                  ; Write directly to Register 0Ah
-
-disable_done:
-    pop     dx                     
-    pop     cx
-    pop     bx
-    pop     ax
-    ret                            
