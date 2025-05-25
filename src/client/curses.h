@@ -27,7 +27,6 @@ extern int g_ncurses_colors[VGA_ATTRS];
 extern WINDOW *g_probe_window;
 extern WINDOW *g_debug_window;
 extern WINDOW *g_session_window;
-extern WINDOW *g_status_window;
 
 extern void cp437_table_init();
 

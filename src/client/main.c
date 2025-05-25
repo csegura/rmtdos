@@ -297,9 +297,6 @@ void refresh_windows() {
     wrefresh(g_debug_window);
   }
 
-  //if (g_status_window) {
-    wrefresh(g_status_window);
-  //}
 }
 
 static const char *DEFAULT_ETH_DEV = "eth0";
